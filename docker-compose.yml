@@ -1,5 +1,5 @@
 services:
-  app:
+  frontend:
     build:
       context: .
       target: dev
@@ -8,5 +8,21 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
+      - /app/server
     environment:
       - NODE_ENV=development
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: ./server
+      target: dev
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - PORT=3001

@@ -10,5 +10,12 @@ export default defineConfig({
     watch: {
       usePolling: true,
     },
+    proxy: {
+      '/socket.io': {
+        target: 'http://backend:3001',
+        changeOrigin: true,
+        ws: true,
+      },
+    },
   },
 })
