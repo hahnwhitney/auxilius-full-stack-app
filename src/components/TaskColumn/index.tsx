@@ -7,7 +7,7 @@ interface TaskColumnProps {
   statusName: string;
   onTitleChange: (id: string, title: string) => void;
   onDescriptionChange: (id: string, description: string) => void;
-  onStatusChange: (id: string) => void;
+  onStatusChange: (id: string, status: string) => void;
   onDelete: (id: string) => void;
 }
 

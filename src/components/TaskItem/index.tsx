@@ -5,7 +5,7 @@ interface TaskItemProps {
   task: Task
   onTitleChange: (id: string, title: string) => void
   onDescriptionChange: (id: string, description: string) => void
-  onStatusChange: (id: string) => void
+  onStatusChange: (id: string, status: string) => void
   onDelete: (id: string) => void
 }
 
@@ -28,9 +28,30 @@ function TaskItem({ task, onTitleChange, onDescriptionChange, onStatusChange, on
     }
   }
 
+  const handleTitleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      (e.target as HTMLInputElement).blur()
+      const trimmed = title.trim()
+      if (trimmed.length > 0 && trimmed !== task.title) {
+        onTitleChange(task.id, trimmed)
+      } else {
+        setTitle(task.title)
+      }
+    }
+  }
+
   const handleDescriptionBlur = () => {
     if (description !== task.description) {
       onDescriptionChange(task.id, description)
+    }
+  }
+
+  const handleDescriptionKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      (e.target as HTMLInputElement).blur()
+      if (description !== task.description) {
+        onDescriptionChange(task.id, description)
+      }
     }
   }
 
@@ -44,7 +65,7 @@ function TaskItem({ task, onTitleChange, onDescriptionChange, onStatusChange, on
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           onBlur={handleTitleBlur}
-          onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
+          onKeyDown={handleTitleKeyDown}
         />
       </label>
 
@@ -56,7 +77,7 @@ function TaskItem({ task, onTitleChange, onDescriptionChange, onStatusChange, on
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           onBlur={handleDescriptionBlur}
-          onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
+          onKeyDown={handleDescriptionKeyDown}
           placeholder="Add a description..."
         />
       </label>
@@ -65,7 +86,8 @@ function TaskItem({ task, onTitleChange, onDescriptionChange, onStatusChange, on
         <span>Status</span>
         <select
           value={task.status}
-          onChange={() => onStatusChange(task.id)}
+          onChange={e => onStatusChange(task.id, e.target.value)}
+          aria-label="Status"
         >
           {STATUS_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>
