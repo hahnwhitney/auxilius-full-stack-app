@@ -1,0 +1,48 @@
+.appContainer {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+
+  .mainLayout {
+    display: flex;
+    flex: 1;
+  }
+
+  .routeWrapper {
+    padding: 0.75em;
+    max-height: calc(
+      100vh - 64px - 44px
+    ); /* subtract height of header and footer */
+
+    width: 100%;
+
+    & > * {
+      padding-bottom: 44px; /* height of footer */
+    }
+  }
+
+  footer {
+    display: flex;
+    flex-direction: column;
+    padding: 0.75em;
+    border-top: 1px solid var(--cool-lavender-primary);
+    background-color: var(--snow-white-primary);
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: calc(100% - 1.5em);
+  }
+}
+
+@media screen and (width >=480px) {
+  .appContainer footer {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+}
+
+@media screen and (width >=768px) {
+  .appContainer .routeWrapper {
+    padding: 1.5em;
+  }
+}

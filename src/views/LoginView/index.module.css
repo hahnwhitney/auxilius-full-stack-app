@@ -1,0 +1,40 @@
+.login {
+  .form {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background-color: var(--pale-periwinkle-primary);
+    padding: 2em;
+    height: 100vh;
+  }
+
+  .innerWrapper,
+  .inputWrapper {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .innerWrapper {
+    gap: 1em;
+  }
+
+  a {
+    color: var(--cool-lavender-primary);
+    text-align: center;
+  }
+}
+
+@media screen and (width >=400px) {
+  .login {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background-color: var(--dark-blue-primary);
+
+    .form {
+      border-radius: 1em;
+      max-height: fit-content;
+    }
+  }
+}
