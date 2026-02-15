@@ -1,6 +1,5 @@
 import { toHaveNoViolations } from "jest-axe";
 import "@testing-library/jest-dom";
-// import fetchMock from 'jest-fetch-mock';
 
 // In the future, we may want to mock libraries like analytics or event reporters,
 // third-party tools like BugSnag, etc.
