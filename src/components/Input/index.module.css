@@ -1,0 +1,30 @@
+.inputFieldLabel,
+.inputInvalidMessage {
+  padding-left: var(--size-xs);
+}
+
+.inputField {
+  padding: 0.5rem;
+  border: 2px solid var(--pastel-periwinkle-primary);
+  border-radius: 0.375rem;
+  background-color: white;
+  margin-top: 0.25em;
+
+  &::placeholder {
+    color: gray;
+  }
+
+  &:focus:not(.inputInvalid) {
+    border-color: var(--dark-blue-primary);
+  }
+
+  &.invalid {
+    /* stylelint-disable-next-line declaration-no-important */
+    border: 2px solid var(--danger) !important;
+    margin-bottom: 0.25em;
+  }
+}
+
+.inputInvalidMessage {
+  color: var(--danger);
+}

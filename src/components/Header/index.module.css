@@ -1,0 +1,45 @@
+.header {
+  background: var(--dark-blue-primary);
+  color: var(--white);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.625em 0.5em 0.625em 1.5em;
+  position: relative;
+
+  & > div {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.75em;
+  }
+
+  .title {
+    font-size: var(--size-m);
+    font-weight: bold;
+  }
+
+  a {
+    color: var(--white);
+  }
+
+  .email {
+    display: none;
+  }
+
+  button {
+    color: var(--white);
+    padding: 0.675em;
+    border: 0;
+    background: transparent;
+    justify-content: center;
+    width: var(--minimum-touch-target);
+    height: var(--minimum-touch-target);
+  }
+}
+
+@media screen and (width >=600px) {
+  .header .email {
+    display: block;
+  }
+}
