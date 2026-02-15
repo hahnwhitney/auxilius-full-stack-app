@@ -48,10 +48,10 @@ io.on("connection", (socket) => {
     io.emit("task:added", task);
   });
 
-  socket.on("task:statusChange", (id: string) => {
+  socket.on("task:statusChange", ({ id, status }: { id: string; status: string }) => {
     const task = tasks.find((t) => t.id === id);
-    if (task) {
-      task.status = STATUS_CYCLE[task.status];
+    if (task && Object.values(TaskStatus).includes(status as TaskStatus)) {
+      task.status = status as TaskStatus;
       io.emit("task:statusChanged", { id, status: task.status });
     }
   });
