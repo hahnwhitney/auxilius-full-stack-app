@@ -1,5 +1,5 @@
-import { Task, TaskStatus } from '../types'
-import TaskItem from './TaskItem'
+import { TaskStatus, type Task } from '../../types'
+import TaskItem from '../TaskItem'
 
 interface TaskColumnProps {
   tasks: Task[];

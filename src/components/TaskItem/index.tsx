@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { TaskStatus, type Task } from '../types'
+import { TaskStatus, type Task } from '../../types'
 
 interface TaskItemProps {
   task: Task

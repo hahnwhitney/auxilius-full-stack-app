@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { TaskStatus } from '../types'
+import { TaskStatus } from '../../types'
 
 interface TaskFormProps {
   onAdd: (title: string, description: string, status: TaskStatus) => void
