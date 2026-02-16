@@ -9,7 +9,10 @@ jest.mock("react-router", () => ({
 }));
 jest.mock("../../components/Button", () => ({
   __esModule: true,
-  default: ({ text, ...props }: { text: string } & React.ButtonHTMLAttributes<HTMLButtonElement>) => (
+  default: ({
+    text,
+    ...props
+  }: { text: string } & React.ButtonHTMLAttributes<HTMLButtonElement>) => (
     <button {...props}>{text}</button>
   ),
 }));
@@ -95,7 +98,10 @@ describe("LoginView", () => {
   });
 
   it("shows error when username not found", async () => {
-    (globalThis.fetch as jest.Mock).mockResolvedValue({ ok: false, status: 404 });
+    (globalThis.fetch as jest.Mock).mockResolvedValue({
+      ok: false,
+      status: 404,
+    });
     render(<LoginView />);
     const input = screen.getByLabelText("Username");
     fireEvent.change(input, { target: { value: "unknown" } });
@@ -110,7 +116,9 @@ describe("LoginView", () => {
   it("authenticates and redirects on valid username", async () => {
     (globalThis.fetch as jest.Mock).mockResolvedValue({ ok: true });
     const navigateMock = jest.fn();
-    jest.mocked(jest.requireMock("react-router").useNavigate).mockReturnValue(navigateMock);
+    jest
+      .mocked(jest.requireMock("react-router").useNavigate)
+      .mockReturnValue(navigateMock);
     render(<LoginView />);
     const input = screen.getByLabelText("Username");
     fireEvent.change(input, { target: { value: "whitney" } });

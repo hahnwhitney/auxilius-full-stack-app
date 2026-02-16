@@ -1,15 +1,16 @@
 import { render, screen, act, fireEvent, within } from "@testing-library/react";
 import TaskBoardView from "./index";
 import { io } from "socket.io-client";
-import { TaskStatus } from "../../types";
+import { TaskStatus, type Task } from "../../types";
 
 jest.mock("socket.io-client", () => ({
   io: jest.fn(() => {
     const listeners: Record<string, (...args: unknown[]) => void> = {};
+    const on = jest.fn((event: string, cb: (...args: unknown[]) => void) => {
+      listeners[event] = cb;
+    });
     return {
-      on: (event: string, cb: (...args: unknown[]) => void) => {
-        listeners[event] = cb;
-      },
+      on,
       emit: jest.fn(),
       disconnect: jest.fn(),
       listeners,
@@ -18,15 +19,24 @@ jest.mock("socket.io-client", () => ({
 }));
 jest.mock("../../components/TaskForm", () => ({
   __esModule: true,
-  default: ({ onAdd }: { onAdd: (title: string, desc: string, status: string) => void }) => (
-    <form onSubmit={(e) => { e.preventDefault(); onAdd("title", "desc", TaskStatus.TODO); }}>
+  default: ({
+    onAdd,
+  }: {
+    onAdd: (title: string, desc: string, status: string) => void;
+  }) => (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        onAdd("title", "desc", TaskStatus.TODO);
+      }}
+    >
       <button type="submit">Add</button>
     </form>
   ),
 }));
 jest.mock("../../components/TaskColumn", () => ({
   __esModule: true,
-  default: (props: { status: string; statusName: string; tasks?: any[] }) => (
+  default: (props: { status: string; statusName: string; tasks?: Task[] }) => (
     <div data-testid={props.status}>
       <h2>{props.statusName}</h2>
       {props.tasks && props.tasks.length === 0 && <p>No tasks yet</p>}
