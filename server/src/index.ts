@@ -3,12 +3,6 @@ import { createServer } from "node:http";
 import { Server } from "socket.io";
 import { type Task, TaskStatus } from './types.js'
 
-const STATUS_CYCLE: Record<string, TaskStatus> = {
-  [TaskStatus.TODO]: TaskStatus.IN_PROGRESS,
-  [TaskStatus.IN_PROGRESS]: TaskStatus.DONE,
-  [TaskStatus.DONE]: TaskStatus.TODO,
-};
-
 const app = express();
 const httpServer = createServer(app);
 
