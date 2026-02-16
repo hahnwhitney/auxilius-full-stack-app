@@ -12,7 +12,9 @@ describe("TaskForm", () => {
   it("renders all form fields and options", () => {
     render(<TaskForm onAdd={onAdd} />);
     expect(screen.getByPlaceholderText("Task title...")).toBeInTheDocument();
-    expect(screen.getByPlaceholderText("Description (optional)")).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText("Description (optional)"),
+    ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /add/i })).toBeInTheDocument();
     const select = screen.getByRole("combobox");
     expect(select).toBeInTheDocument();
@@ -33,7 +35,11 @@ describe("TaskForm", () => {
     fireEvent.change(select, { target: { value: TaskStatus.IN_PROGRESS } });
     fireEvent.click(addBtn);
 
-    expect(onAdd).toHaveBeenCalledWith("New Task", "Some description", TaskStatus.IN_PROGRESS);
+    expect(onAdd).toHaveBeenCalledWith(
+      "New Task",
+      "Some description",
+      TaskStatus.IN_PROGRESS,
+    );
     expect(titleInput).toHaveValue("");
     expect(descInput).toHaveValue("");
     expect(select).toHaveValue(TaskStatus.TODO); // resets to TODO

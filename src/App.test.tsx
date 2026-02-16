@@ -2,13 +2,19 @@ import { render, screen } from "@testing-library/react";
 import App from "./App";
 
 jest.mock("./providers/auth/auth-provider", () => ({
-  AuthProvider: ({ children }: { children: React.ReactNode }) => <div data-testid="auth-provider">{children}</div>,
+  AuthProvider: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="auth-provider">{children}</div>
+  ),
 }));
 jest.mock("./components/ProtectedRoute", () => {
   const { Outlet } = jest.requireActual("react-router");
   return {
     __esModule: true,
-    default: () => <div data-testid="protected-route"><Outlet /></div>,
+    default: () => (
+      <div data-testid="protected-route">
+        <Outlet />
+      </div>
+    ),
   };
 });
 jest.mock("./views/HomeView", () => ({
@@ -31,7 +37,7 @@ describe("App", () => {
     render(
       <MemoryRouter initialEntries={["/"]}>
         <App />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
     expect(screen.getByTestId("home-view")).toBeInTheDocument();
     expect(screen.queryByTestId("login-view")).toBeNull();
@@ -42,7 +48,7 @@ describe("App", () => {
     render(
       <MemoryRouter initialEntries={["/login"]}>
         <App />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
     expect(screen.getByTestId("login-view")).toBeInTheDocument();
     expect(screen.queryByTestId("home-view")).toBeNull();
@@ -53,7 +59,7 @@ describe("App", () => {
     render(
       <MemoryRouter initialEntries={["/taskboard"]}>
         <App />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
     expect(screen.getByTestId("protected-route")).toBeInTheDocument();
     expect(screen.getByTestId("taskboard-view")).toBeInTheDocument();
@@ -65,7 +71,7 @@ describe("App", () => {
     render(
       <MemoryRouter initialEntries={["/"]}>
         <App />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
     expect(screen.getByTestId("auth-provider")).toBeInTheDocument();
   });

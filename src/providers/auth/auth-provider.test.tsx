@@ -14,7 +14,7 @@ describe("AuthProvider", () => {
             return null;
           }}
         </AuthContext.Consumer>
-      </AuthProvider>
+      </AuthProvider>,
     );
     expect(contextValues!.isAuthenticated).toBe(true);
     expect(contextValues!.currentUsername).toBe("");
@@ -33,7 +33,7 @@ describe("AuthProvider", () => {
     render(
       <AuthProvider>
         <TestComponent />
-      </AuthProvider>
+      </AuthProvider>,
     );
     act(() => {
       contextValues!.setIsAuthenticated(false);

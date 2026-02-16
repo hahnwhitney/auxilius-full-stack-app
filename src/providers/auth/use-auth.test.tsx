@@ -8,7 +8,7 @@ describe("useAuth", () => {
     const originalError = console.error;
     console.error = jest.fn();
     expect(() => renderHook(() => useAuth())).toThrow(
-      "useAuth must be used within an AuthProvider"
+      "useAuth must be used within an AuthProvider",
     );
     console.error = originalError;
   });

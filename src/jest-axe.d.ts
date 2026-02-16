@@ -4,7 +4,10 @@ declare module "jest-axe" {
   export function axe(html: Element | string): Promise<AxeResults>;
 
   export const toHaveNoViolations: {
-    toHaveNoViolations(results: AxeResults): { pass: boolean; message(): string };
+    toHaveNoViolations(results: AxeResults): {
+      pass: boolean;
+      message(): string;
+    };
   };
 }
 

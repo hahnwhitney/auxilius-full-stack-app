@@ -30,7 +30,7 @@ describe("ProtectedRoute", () => {
     const { container } = render(
       <MemoryRouter>
         <ProtectedRoute />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
     // Should render Navigate component (no appContainer)
     expect(container.querySelector(".appContainer")).toBeNull();
@@ -46,7 +46,7 @@ describe("ProtectedRoute", () => {
     const { getByTestId, container } = render(
       <MemoryRouter>
         <ProtectedRoute />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
     expect(getByTestId("header")).toBeInTheDocument();
     expect(container.querySelector(".appContainer")).toBeInTheDocument();
@@ -67,7 +67,7 @@ describe("ProtectedRoute", () => {
     render(
       <MemoryRouter>
         <ProtectedRoute />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
     // Simulate logOut via Header prop
     const headerInstance = HeaderMock.mock.calls[0][0];

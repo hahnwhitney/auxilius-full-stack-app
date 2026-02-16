@@ -2,7 +2,11 @@ import { render, screen } from "@testing-library/react";
 import HomeView from "./index";
 
 jest.mock("react-router", () => ({
-  Link: ({ to, children }: { to: string; children: React.ReactNode }) => <a href={to} data-testid="link">{children}</a>,
+  Link: ({ to, children }: { to: string; children: React.ReactNode }) => (
+    <a href={to} data-testid="link">
+      {children}
+    </a>
+  ),
 }));
 
 describe("HomeView", () => {

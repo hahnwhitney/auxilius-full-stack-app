@@ -26,14 +26,16 @@ describe("TaskItem", () => {
         onDescriptionChange={onDescriptionChange}
         onStatusChange={onStatusChange}
         onDelete={onDelete}
-      />
+      />,
     );
     expect(screen.getByDisplayValue(task.title)).toBeInTheDocument();
     expect(screen.getByDisplayValue(task.description)).toBeInTheDocument();
     expect(screen.getByText("To Do")).toBeInTheDocument();
     expect(screen.getByText("In Progress")).toBeInTheDocument();
     expect(screen.getByText("Done")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: `Delete ${task.title}` })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: `Delete ${task.title}` }),
+    ).toBeInTheDocument();
   });
 
   it("calls onTitleChange on blur if title changed and not empty", () => {
@@ -44,7 +46,7 @@ describe("TaskItem", () => {
         onDescriptionChange={onDescriptionChange}
         onStatusChange={onStatusChange}
         onDelete={onDelete}
-      />
+      />,
     );
     const titleInput = screen.getByDisplayValue(task.title);
     fireEvent.change(titleInput, { target: { value: "New Title" } });
@@ -60,7 +62,7 @@ describe("TaskItem", () => {
         onDescriptionChange={onDescriptionChange}
         onStatusChange={onStatusChange}
         onDelete={onDelete}
-      />
+      />,
     );
     const titleInput = screen.getByDisplayValue(task.title);
     fireEvent.change(titleInput, { target: { value: "" } });
@@ -82,7 +84,7 @@ describe("TaskItem", () => {
         onDescriptionChange={onDescriptionChange}
         onStatusChange={onStatusChange}
         onDelete={onDelete}
-      />
+      />,
     );
     const descInput = screen.getByDisplayValue(task.description);
     fireEvent.change(descInput, { target: { value: "New Desc" } });
@@ -98,7 +100,7 @@ describe("TaskItem", () => {
         onDescriptionChange={onDescriptionChange}
         onStatusChange={onStatusChange}
         onDelete={onDelete}
-      />
+      />,
     );
     const descInput = screen.getByDisplayValue(task.description);
     fireEvent.blur(descInput);
@@ -113,14 +115,17 @@ describe("TaskItem", () => {
         onDescriptionChange={onDescriptionChange}
         onStatusChange={onStatusChange}
         onDelete={onDelete}
-      />
+      />,
     );
     const select = screen.getByLabelText("Status");
     fireEvent.change(select, { target: { value: TaskStatus.DONE } });
     fireEvent.change(select, { target: { value: TaskStatus.IN_PROGRESS } });
     expect(onStatusChange).toHaveBeenCalledTimes(2);
     expect(onStatusChange).toHaveBeenCalledWith(task.id, TaskStatus.DONE);
-    expect(onStatusChange).toHaveBeenCalledWith(task.id, TaskStatus.IN_PROGRESS);
+    expect(onStatusChange).toHaveBeenCalledWith(
+      task.id,
+      TaskStatus.IN_PROGRESS,
+    );
   });
 
   it("calls onDelete when delete button clicked", () => {
@@ -131,9 +136,11 @@ describe("TaskItem", () => {
         onDescriptionChange={onDescriptionChange}
         onStatusChange={onStatusChange}
         onDelete={onDelete}
-      />
+      />,
     );
-    const deleteBtn = screen.getByRole("button", { name: `Delete ${task.title}` });
+    const deleteBtn = screen.getByRole("button", {
+      name: `Delete ${task.title}`,
+    });
     fireEvent.click(deleteBtn);
     expect(onDelete).toHaveBeenCalledWith(task.id);
   });
@@ -146,7 +153,7 @@ describe("TaskItem", () => {
         onDescriptionChange={onDescriptionChange}
         onStatusChange={onStatusChange}
         onDelete={onDelete}
-      />
+      />,
     );
     const titleInput = screen.getByDisplayValue(task.title);
     fireEvent.change(titleInput, { target: { value: "New Title" } });

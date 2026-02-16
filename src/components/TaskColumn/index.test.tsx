@@ -9,8 +9,18 @@ const MockedTaskItem = TaskItem as jest.Mock;
 
 describe("TaskColumn", () => {
   const mockTasks: Task[] = [
-    { id: "1", title: "Task 1", description: "Desc 1", status: TaskStatus.TODO },
-    { id: "2", title: "Task 2", description: "Desc 2", status: TaskStatus.TODO },
+    {
+      id: "1",
+      title: "Task 1",
+      description: "Desc 1",
+      status: TaskStatus.TODO,
+    },
+    {
+      id: "2",
+      title: "Task 2",
+      description: "Desc 2",
+      status: TaskStatus.TODO,
+    },
   ];
   const status = TaskStatus.TODO;
   const statusName = "To Do";
@@ -33,7 +43,7 @@ describe("TaskColumn", () => {
         onDescriptionChange={onDescriptionChange}
         onStatusChange={onStatusChange}
         onDelete={onDelete}
-      />
+      />,
     );
     expect(screen.getByText(statusName)).toBeInTheDocument();
     expect(document.querySelector(`.${status}`)).toBeInTheDocument();
@@ -49,7 +59,7 @@ describe("TaskColumn", () => {
         onDescriptionChange={onDescriptionChange}
         onStatusChange={onStatusChange}
         onDelete={onDelete}
-      />
+      />,
     );
     const items = screen.getAllByTestId("task-item");
     expect(items).toHaveLength(mockTasks.length);
@@ -65,7 +75,7 @@ describe("TaskColumn", () => {
         onDescriptionChange={onDescriptionChange}
         onStatusChange={onStatusChange}
         onDelete={onDelete}
-      />
+      />,
     );
     expect(MockedTaskItem).toHaveBeenCalledTimes(mockTasks.length);
     mockTasks.forEach((task, idx) => {
@@ -89,7 +99,7 @@ describe("TaskColumn", () => {
         onDescriptionChange={onDescriptionChange}
         onStatusChange={onStatusChange}
         onDelete={onDelete}
-      />
+      />,
     );
     expect(screen.queryByTestId("task-item")).toBeNull();
   });

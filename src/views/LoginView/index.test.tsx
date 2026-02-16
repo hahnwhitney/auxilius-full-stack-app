@@ -7,18 +7,34 @@ jest.mock("react-router", () => ({
 }));
 jest.mock("../../components/Button", () => ({
   __esModule: true,
-  default: ({ text, ...props }: { text: string } & React.ButtonHTMLAttributes<HTMLButtonElement>) => <button {...props}>{text}</button>,
+  default: ({
+    text,
+    ...props
+  }: { text: string } & React.ButtonHTMLAttributes<HTMLButtonElement>) => (
+    <button {...props}>{text}</button>
+  ),
 }));
 jest.mock("../../components/Input", () => ({
   __esModule: true,
-  default: ({ label, validationErrorMsg, value, onChange, ...props }: { label: string; validationErrorMsg?: string; value?: string; onChange?: (v: string) => void } & React.InputHTMLAttributes<HTMLInputElement>) => {
+  default: ({
+    label,
+    validationErrorMsg,
+    value,
+    onChange,
+    ...props
+  }: {
+    label: string;
+    validationErrorMsg?: string;
+    value?: string;
+    onChange?: (v: string) => void;
+  } & React.InputHTMLAttributes<HTMLInputElement>) => {
     return (
       <div>
         <label htmlFor={props.id}>{label}</label>
         <input
           id={props.id}
           value={value || ""}
-          onChange={e => {
+          onChange={(e) => {
             if (onChange) onChange(e.target.value);
           }}
           {...props}
@@ -61,7 +77,9 @@ describe("LoginScreen", () => {
 
   it("authenticates and redirects on valid username", () => {
     const navigateMock = jest.fn();
-    (jest.mocked(jest.requireMock("react-router").useNavigate)).mockReturnValue(navigateMock);
+    jest
+      .mocked(jest.requireMock("react-router").useNavigate)
+      .mockReturnValue(navigateMock);
     render(<LoginScreen />);
     const input = screen.getByLabelText("Username");
     act(() => {

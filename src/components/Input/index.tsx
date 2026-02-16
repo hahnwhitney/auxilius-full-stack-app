@@ -1,7 +1,10 @@
 import React, { useState } from "react";
 import styles from "./index.module.css";
 
-interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange"> {
+interface InputProps extends Omit<
+  React.InputHTMLAttributes<HTMLInputElement>,
+  "onChange"
+> {
   label: string;
   type:
     | "button"
@@ -45,7 +48,7 @@ const Input = ({
   inputValid,
   onChange,
   validationErrorMsg,
-}:InputProps) => {
+}: InputProps) => {
   const [inputValue, setInputValue] = useState(value);
 
   return (

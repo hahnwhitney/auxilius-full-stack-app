@@ -7,7 +7,9 @@ jest.mock("socket.io-client", () => ({
   io: jest.fn(() => {
     const listeners: Record<string, (...args: unknown[]) => void> = {};
     return {
-      on: (event: string, cb: (...args: unknown[]) => void) => { listeners[event] = cb; },
+      on: (event: string, cb: (...args: unknown[]) => void) => {
+        listeners[event] = cb;
+      },
       emit: jest.fn(),
       disconnect: jest.fn(),
       listeners,
@@ -16,22 +18,40 @@ jest.mock("socket.io-client", () => ({
 }));
 jest.mock("../../components/TaskForm", () => ({
   __esModule: true,
-  default: ({ onAdd }: { onAdd: (title: string, desc: string, status: string) => void }) => <button onClick={() => onAdd("title", "desc", TaskStatus.TODO)}>Add Task</button>,
+  default: ({
+    onAdd,
+  }: {
+    onAdd: (title: string, desc: string, status: string) => void;
+  }) => (
+    <button onClick={() => onAdd("title", "desc", TaskStatus.TODO)}>
+      Add Task
+    </button>
+  ),
 }));
 jest.mock("../../components/TaskColumn", () => ({
   __esModule: true,
-  default: (props: { status: string; statusName: string }) => <div data-testid={props.status}>{props.statusName}</div>,
+  default: (props: { status: string; statusName: string }) => (
+    <div data-testid={props.status}>{props.statusName}</div>
+  ),
 }));
 
-
-function triggerSocketEvent(socket: { listeners: Record<string, (...args: unknown[]) => void> }, event: string, payload?: unknown) {
+function triggerSocketEvent(
+  socket: { listeners: Record<string, (...args: unknown[]) => void> },
+  event: string,
+  payload?: unknown,
+) {
   act(() => {
     socket.listeners[event](payload);
   });
 }
 
 describe("TaskBoardView", () => {
-  let socket: { emit: jest.Mock; listeners: Record<string, (...args: unknown[]) => void>; disconnect: jest.Mock; on: jest.Mock };
+  let socket: {
+    emit: jest.Mock;
+    listeners: Record<string, (...args: unknown[]) => void>;
+    disconnect: jest.Mock;
+    on: jest.Mock;
+  };
 
   beforeEach(async () => {
     (io as jest.Mock).mockClear();
@@ -72,30 +92,49 @@ describe("TaskBoardView", () => {
 
   it("handles task:added event", () => {
     triggerSocketEvent(socket, "tasks:initial", []);
-    triggerSocketEvent(socket, "task:added", { id: "3", title: "E", description: "F", status: TaskStatus.IN_PROGRESS });
+    triggerSocketEvent(socket, "task:added", {
+      id: "3",
+      title: "E",
+      description: "F",
+      status: TaskStatus.IN_PROGRESS,
+    });
     expect(screen.getByTestId(TaskStatus.IN_PROGRESS)).toBeInTheDocument();
   });
 
   it("handles task:statusChanged event", () => {
-    triggerSocketEvent(socket, "tasks:initial", [{ id: "1", title: "A", description: "B", status: TaskStatus.TODO }]);
-    triggerSocketEvent(socket, "task:statusChanged", { id: "1", status: TaskStatus.DONE });
+    triggerSocketEvent(socket, "tasks:initial", [
+      { id: "1", title: "A", description: "B", status: TaskStatus.TODO },
+    ]);
+    triggerSocketEvent(socket, "task:statusChanged", {
+      id: "1",
+      status: TaskStatus.DONE,
+    });
     expect(screen.getByTestId(TaskStatus.DONE)).toBeInTheDocument();
   });
 
   it("handles task:titleChanged event", () => {
-    triggerSocketEvent(socket, "tasks:initial", [{ id: "1", title: "A", description: "B", status: TaskStatus.TODO }]);
+    triggerSocketEvent(socket, "tasks:initial", [
+      { id: "1", title: "A", description: "B", status: TaskStatus.TODO },
+    ]);
     triggerSocketEvent(socket, "task:titleChanged", { id: "1", title: "Z" });
     expect(screen.getByTestId(TaskStatus.TODO)).toBeInTheDocument();
   });
 
   it("handles task:descriptionChanged event", () => {
-    triggerSocketEvent(socket, "tasks:initial", [{ id: "1", title: "A", description: "B", status: TaskStatus.TODO }]);
-    triggerSocketEvent(socket, "task:descriptionChanged", { id: "1", description: "ZZ" });
+    triggerSocketEvent(socket, "tasks:initial", [
+      { id: "1", title: "A", description: "B", status: TaskStatus.TODO },
+    ]);
+    triggerSocketEvent(socket, "task:descriptionChanged", {
+      id: "1",
+      description: "ZZ",
+    });
     expect(screen.getByTestId(TaskStatus.TODO)).toBeInTheDocument();
   });
 
   it("handles task:deleted event", () => {
-    triggerSocketEvent(socket, "tasks:initial", [{ id: "1", title: "A", description: "B", status: TaskStatus.TODO }]);
+    triggerSocketEvent(socket, "tasks:initial", [
+      { id: "1", title: "A", description: "B", status: TaskStatus.TODO },
+    ]);
     triggerSocketEvent(socket, "task:deleted", "1");
     expect(screen.getByText("No tasks yet")).toBeInTheDocument();
   });
@@ -103,11 +142,20 @@ describe("TaskBoardView", () => {
   it("emits task:add when TaskForm adds task", () => {
     const addBtn = screen.getByText("Add Task");
     fireEvent.click(addBtn);
-    expect(socket.emit).toHaveBeenCalledWith("task:add", { title: "title", description: "desc", status: TaskStatus.TODO });
+    expect(socket.emit).toHaveBeenCalledWith("task:add", {
+      title: "title",
+      description: "desc",
+      status: TaskStatus.TODO,
+    });
   });
 
   it("emits task:titleChange, descriptionChange, statusChange, delete on handlers", () => {
-    const task = { id: "1", title: "A", description: "B", status: TaskStatus.TODO };
+    const task = {
+      id: "1",
+      title: "A",
+      description: "B",
+      status: TaskStatus.TODO,
+    };
     triggerSocketEvent(socket, "tasks:initial", [task]);
     expect(socket.emit).toBeDefined();
   });
