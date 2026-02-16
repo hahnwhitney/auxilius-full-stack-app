@@ -26,6 +26,7 @@ describe("AuthProvider", () => {
     let contextValues: AuthContextValues | undefined;
     function TestComponent() {
       const ctx = React.useContext(AuthContext);
+      // eslint-disable-next-line
       contextValues = ctx;
       return null;
     }
