@@ -10,3 +10,8 @@ export interface Task {
   description: string;
   status: TaskStatus;
 }
+
+export interface User {
+  id: string;
+  username: string;
+}

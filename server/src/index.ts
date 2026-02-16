@@ -1,7 +1,16 @@
 import express from "express";
 import { createServer } from "node:http";
 import { Server } from "socket.io";
-import { type Task, TaskStatus } from "./types.js";
+import { TaskStatus } from "./types.js";
+import {
+  connectDb,
+  getAllTasks,
+  insertTask,
+  updateTaskStatus,
+  updateTaskTitle,
+  updateTaskDescription,
+  deleteTask,
+} from "./db.js";
 
 const app = express();
 const httpServer = createServer(app);
@@ -13,12 +22,6 @@ const io = new Server(httpServer, {
   },
 });
 
-const tasks: Task[] = [];
-
-function generateId(): string {
-  return Date.now().toString(36) + Math.random().toString(36).substring(2, 8);
-}
-
 app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
 });
@@ -26,66 +29,83 @@ app.get("/health", (_req, res) => {
 io.on("connection", (socket) => {
   console.log(`Client connected: ${socket.id}`);
 
-  socket.emit("tasks:initial", tasks);
+  getAllTasks()
+    .then((tasks) => socket.emit("tasks:initial", tasks))
+    .catch((err) => console.error("Failed to fetch tasks:", err));
 
   socket.on(
     "task:add",
-    (data: { title: string; description: string; status: string }) => {
-      const task: Task = {
-        id: generateId(),
-        title: data.title.trim(),
-        description: data.description ?? "",
-        status: (Object.values(TaskStatus).includes(data.status as TaskStatus)
-          ? data.status
-          : TaskStatus.TODO) as TaskStatus,
-      };
-      if (task.title.length === 0) return;
-      tasks.push(task);
-      io.emit("task:added", task);
+    async (data: { title: string; description: string; status: string }) => {
+      try {
+        const title = data.title.trim();
+        if (title.length === 0) return;
+        const status = Object.values(TaskStatus).includes(
+          data.status as TaskStatus,
+        )
+          ? (data.status as TaskStatus)
+          : TaskStatus.TODO;
+        const task = await insertTask(title, data.description ?? "", status);
+        io.emit("task:added", task);
+      } catch (err) {
+        console.error("Failed to add task:", err);
+      }
     },
   );
 
   socket.on(
     "task:statusChange",
-    ({ id, status }: { id: string; status: string }) => {
-      const task = tasks.find((t) => t.id === id);
-      if (task && Object.values(TaskStatus).includes(status as TaskStatus)) {
-        task.status = status as TaskStatus;
-        io.emit("task:statusChanged", { id, status: task.status });
+    async ({ id, status }: { id: string; status: string }) => {
+      try {
+        if (!Object.values(TaskStatus).includes(status as TaskStatus)) return;
+        const task = await updateTaskStatus(id, status as TaskStatus);
+        if (task) {
+          io.emit("task:statusChanged", { id, status: task.status });
+        }
+      } catch (err) {
+        console.error("Failed to update task status:", err);
       }
     },
   );
 
   socket.on(
     "task:titleChange",
-    ({ id, title }: { id: string; title: string }) => {
-      const task = tasks.find((t) => t.id === id);
-      if (task) {
-        task.title = title.trim();
-        io.emit("task:titleChanged", { id, title: task.title });
+    async ({ id, title }: { id: string; title: string }) => {
+      try {
+        const task = await updateTaskTitle(id, title.trim());
+        if (task) {
+          io.emit("task:titleChanged", { id, title: task.title });
+        }
+      } catch (err) {
+        console.error("Failed to update task title:", err);
       }
     },
   );
 
   socket.on(
     "task:descriptionChange",
-    ({ id, description }: { id: string; description: string }) => {
-      const task = tasks.find((t) => t.id === id);
-      if (task) {
-        task.description = description;
-        io.emit("task:descriptionChanged", {
-          id,
-          description: task.description,
-        });
+    async ({ id, description }: { id: string; description: string }) => {
+      try {
+        const task = await updateTaskDescription(id, description);
+        if (task) {
+          io.emit("task:descriptionChanged", {
+            id,
+            description: task.description,
+          });
+        }
+      } catch (err) {
+        console.error("Failed to update task description:", err);
       }
     },
   );
 
-  socket.on("task:delete", (id: string) => {
-    const index = tasks.findIndex((t) => t.id === id);
-    if (index !== -1) {
-      tasks.splice(index, 1);
-      io.emit("task:deleted", id);
+  socket.on("task:delete", async (id: string) => {
+    try {
+      const deleted = await deleteTask(id);
+      if (deleted) {
+        io.emit("task:deleted", id);
+      }
+    } catch (err) {
+      console.error("Failed to delete task:", err);
     }
   });
 
@@ -96,6 +116,14 @@ io.on("connection", (socket) => {
 
 const PORT = Number(process.env.PORT) || 3001;
 
-httpServer.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server running on http://0.0.0.0:${PORT}`);
+async function start() {
+  await connectDb();
+  httpServer.listen(PORT, "0.0.0.0", () => {
+    console.log(`Server running on http://0.0.0.0:${PORT}`);
+  });
+}
+
+start().catch((err) => {
+  console.error("Failed to start server:", err);
+  process.exit(1);
 });
