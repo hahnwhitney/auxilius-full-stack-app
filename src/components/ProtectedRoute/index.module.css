@@ -11,13 +11,13 @@
   .routeWrapper {
     padding: 0.75em;
     max-height: calc(
-      100vh - 64px - 44px
+      100vh - 59px - 49px
     ); /* subtract height of header and footer */
 
     width: 100%;
 
     & > * {
-      padding-bottom: 44px; /* height of footer */
+      padding-bottom: 49px; /* height of footer */
     }
   }
 
@@ -26,7 +26,7 @@
     flex-direction: column;
     padding: 0.75em;
     border-top: 1px solid var(--cool-lavender-primary);
-    background-color: var(--snow-white-primary);
+    background-color: var(--pale-periwinkle-primary);
     position: fixed;
     left: 0;
     bottom: 0;

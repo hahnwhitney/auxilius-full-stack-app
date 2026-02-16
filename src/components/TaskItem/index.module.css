@@ -1,0 +1,52 @@
+.taskItem {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 20px;
+}
+
+.taskItem:not(:last-of-type) {
+  margin-bottom: 1em;
+}
+
+.taskItem.to_do {
+  background-color: #f0f1f9;
+}
+
+.taskItem.in_progress {
+  background-color: #ecebef;
+}
+
+.taskItem.done {
+  background-color: #dedfe5;
+}
+
+.taskItem.to_do,
+.taskItem.in_progress,
+.taskItem.done {
+  background-color: #f6f8f9;
+  padding: 1em;
+}
+
+.taskLabel {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  margin-bottom: 0.5em;
+}
+
+.deleteBtnWrapper {
+  display: flex;
+  flex-grow: 1;
+  justify-content: end;
+}
+
+.taskDeleteBtn {
+  padding: 0.125em;
+  border-color: transparent;
+  background-color: transparent;
+  cursor: pointer;
+}
+
+.taskDeleteBtn > svg {
+  height: 1em;
+}

@@ -1,0 +1,6 @@
+.column.to_do,
+.column.in_progress,
+.column.done {
+  background-color: #f6f8f9;
+  padding: 1em;
+}

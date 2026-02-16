@@ -1,5 +1,7 @@
 import { useState, type FormEvent } from 'react'
+import Button from "../Button";
 import { TaskStatus } from '../../types'
+import styles from "./index.module.css";
 
 interface TaskFormProps {
   onAdd: (title: string, description: string, status: TaskStatus) => void
@@ -27,20 +29,20 @@ function TaskForm({ onAdd }: TaskFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="task-form">
+    <form onSubmit={handleSubmit} className={styles.taskForm}>
       <input
         type="text"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder="Task title..."
-        className="task-input"
+        className={styles.taskInput}
       />
       <input
         type="text"
         value={description}
         onChange={(e) => setDescription(e.target.value)}
         placeholder="Description (optional)"
-        className="task-input"
+        className={styles.taskInput}
       />
       <select
         value={status}
@@ -52,9 +54,7 @@ function TaskForm({ onAdd }: TaskFormProps) {
           </option>
         ))}
       </select>
-      <button type="submit" className="task-add-btn">
-        Add
-      </button>
+      <Button type="submit" text="Add" />
     </form>
   )
 }

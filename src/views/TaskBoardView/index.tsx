@@ -3,6 +3,7 @@ import { io, type Socket } from 'socket.io-client'
 import { TaskStatus, type Task } from '../../types'
 import TaskForm from '../../components/TaskForm'
 import TaskColumn from '../../components/TaskColumn'
+import styles from "./index.module.css";
 
 function TaskBoardView() {
   const [tasks, setTasks] = useState<Task[]>([])
@@ -79,18 +80,16 @@ function TaskBoardView() {
   const completedTasks = tasks.filter((task) => task.status === TaskStatus.DONE)
 
   return (
-    <div className="app">
-      <div className="header-wrapper">
+    <div>
+      <div className={styles.headerWrapper}>
         <h1>All Tasks</h1>
-        <div className={`connection-status ${connected ? 'connected' : 'disconnected'}`}>
+        <div className={`${styles.connectionStatus} ${connected ? styles.connected : styles.disconnected}`}>
           {connected ? 'Connected' : 'Disconnected'}
         </div>
       </div>
       <TaskForm onAdd={handleAdd} />
 
-      {tasks.length === 0 && <p className="empty-message">No tasks yet</p>}
-
-      <div className="task-grid">
+      <div className={styles.taskGrid}>
         <TaskColumn
           tasks={toBeDoneTasks}
           status={TaskStatus.TODO}

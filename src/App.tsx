@@ -4,7 +4,6 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import HomeView from "./views/HomeView";
 import LoginView from "./views/LoginView";
 import TaskBoardView from "./views/TaskBoardView";
-import './App.css';
 
 const App = () => (
   <AuthProvider>

@@ -8,7 +8,7 @@
   line-height: 1.5em;
   padding: 0.5em 0.75em;
   cursor: pointer;
-  border-radius: 2em;
+  border-radius: 4px;
   height: 100%;
 }
 
@@ -16,12 +16,6 @@
   border: 2px solid var(--dark-blue-primary);
   background-color: var(--dark-blue-primary);
   color: var(--white);
-}
-
-.secondary {
-  border: 2px solid var(--cool-lavender-primary);
-  background-color: var(--snow-white-primary);
-  color: var(--cool-lavender-primary);
 }
 
 .button:disabled {
@@ -32,11 +26,7 @@
 }
 
 .button:not([disabled]).primary:hover {
-  border: 2px solid var(--cool-lavender-primary);
-  background-color: var(--cool-lavender-primary);
-}
-
-.button:not([disabled]).secondary:hover {
-  border: 2px solid var(--cool-lavender-primary);
+  border: 2px solid var(--pastel-periwinkle-primary);
   background-color: var(--pale-periwinkle-primary);
+  color: var(--dark-blue-primary);
 }
