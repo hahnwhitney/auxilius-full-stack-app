@@ -16,6 +16,10 @@ export default defineConfig({
         changeOrigin: true,
         ws: true,
       },
+      "/api": {
+        target: "http://backend:3001",
+        changeOrigin: true,
+      },
     },
   },
 });

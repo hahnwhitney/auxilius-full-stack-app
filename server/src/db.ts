@@ -73,10 +73,9 @@ export async function updateTaskDescription(
 }
 
 export async function deleteTask(id: string): Promise<boolean> {
-  const { rowCount } = await pool.query(
-    "DELETE FROM tasks WHERE id = $1",
-    [id],
-  );
+  const { rowCount } = await pool.query("DELETE FROM tasks WHERE id = $1", [
+    id,
+  ]);
   return (rowCount ?? 0) > 0;
 }
 
@@ -111,9 +110,8 @@ export async function getUserByUsername(
 }
 
 export async function deleteUser(id: string): Promise<boolean> {
-  const { rowCount } = await pool.query(
-    "DELETE FROM users WHERE id = $1",
-    [id],
-  );
+  const { rowCount } = await pool.query("DELETE FROM users WHERE id = $1", [
+    id,
+  ]);
   return (rowCount ?? 0) > 0;
 }

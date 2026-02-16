@@ -77,6 +77,7 @@ const Input = ({
             onChange(e.target.value, id);
           }
         }}
+        // inputValid is intentionally not passed to the DOM
       />
 
       {!inputValid && validationErrorMsg && (

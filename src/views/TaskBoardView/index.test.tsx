@@ -1,4 +1,4 @@
-import { render, screen, act, fireEvent } from "@testing-library/react";
+import { render, screen, act, fireEvent, within } from "@testing-library/react";
 import TaskBoardView from "./index";
 import { io } from "socket.io-client";
 import { TaskStatus } from "../../types";
@@ -18,20 +18,20 @@ jest.mock("socket.io-client", () => ({
 }));
 jest.mock("../../components/TaskForm", () => ({
   __esModule: true,
-  default: ({
-    onAdd,
-  }: {
-    onAdd: (title: string, desc: string, status: string) => void;
-  }) => (
-    <button onClick={() => onAdd("title", "desc", TaskStatus.TODO)}>
-      Add Task
-    </button>
+  default: ({ onAdd }: { onAdd: (title: string, desc: string, status: string) => void }) => (
+    <form onSubmit={(e) => { e.preventDefault(); onAdd("title", "desc", TaskStatus.TODO); }}>
+      <button type="submit">Add</button>
+    </form>
   ),
 }));
 jest.mock("../../components/TaskColumn", () => ({
   __esModule: true,
-  default: (props: { status: string; statusName: string }) => (
-    <div data-testid={props.status}>{props.statusName}</div>
+  default: (props: { status: string; statusName: string; tasks?: any[] }) => (
+    <div data-testid={props.status}>
+      <h2>{props.statusName}</h2>
+      {props.tasks && props.tasks.length === 0 && <p>No tasks yet</p>}
+      {props.tasks && props.tasks.length > 0 && <div>Tasks present</div>}
+    </div>
   ),
 }));
 
@@ -77,7 +77,7 @@ describe("TaskBoardView", () => {
   });
 
   it("shows empty message when no tasks", () => {
-    expect(screen.getByText("No tasks yet")).toBeInTheDocument();
+    expect(screen.getAllByText("No tasks yet").length).toBeGreaterThan(0);
   });
 
   it("handles tasks:initial event", () => {
@@ -136,11 +136,14 @@ describe("TaskBoardView", () => {
       { id: "1", title: "A", description: "B", status: TaskStatus.TODO },
     ]);
     triggerSocketEvent(socket, "task:deleted", "1");
-    expect(screen.getByText("No tasks yet")).toBeInTheDocument();
+
+    const todoColumn = screen.getByTestId("to_do");
+    const noTasksMessage = within(todoColumn).getByText("No tasks yet");
+    expect(noTasksMessage).toBeInTheDocument();
   });
 
   it("emits task:add when TaskForm adds task", () => {
-    const addBtn = screen.getByText("Add Task");
+    const addBtn = screen.getByText("Add");
     fireEvent.click(addBtn);
     expect(socket.emit).toHaveBeenCalledWith("task:add", {
       title: "title",

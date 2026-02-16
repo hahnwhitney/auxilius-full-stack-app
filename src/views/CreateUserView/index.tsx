@@ -5,7 +5,7 @@ import Input from "../../components/Input";
 import useAuth from "../../providers/auth/use-auth";
 import styles from "./index.module.css";
 
-const LoginView = () => {
+const CreateUserView = () => {
   const navigate = useNavigate();
   const { setIsAuthenticated, setCurrentUsername } = useAuth();
 
@@ -19,19 +19,27 @@ const LoginView = () => {
     }
 
     try {
-      const res = await fetch(`/api/users/${encodeURIComponent(username)}`);
+      const res = await fetch("/api/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username }),
+      });
+      if (res.status === 409) {
+        setUsernameErrorMsg("Username already taken");
+        return false;
+      }
       if (!res.ok) {
-        setUsernameErrorMsg("Username not found");
+        setUsernameErrorMsg("Unable to create user");
         return false;
       }
       return true;
     } catch {
-      setUsernameErrorMsg("Unable to verify username");
+      setUsernameErrorMsg("Unable to create user");
       return false;
     }
   };
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
     setUsernameErrorMsg("");
 
@@ -45,10 +53,10 @@ const LoginView = () => {
   };
 
   return (
-    <div className={styles.login}>
-      <h1>Welcome back!</h1>
+    <div className={styles.createUser}>
+      <h1>Create an account</h1>
 
-      <form onSubmit={handleLogin} className={styles.form}>
+      <form onSubmit={handleCreateUser} className={styles.form}>
         <div className={styles.innerWrapper}>
           <Input
             label="Username"
@@ -61,15 +69,15 @@ const LoginView = () => {
             className={styles.inputWrapper}
           />
 
-          <Button type="submit" text="Log In" />
+          <Button type="submit" text="Sign Up" />
         </div>
       </form>
 
       <p>
-        Don't have an account? <Link to="/signup">Create an Account</Link>
+        Already have an account? <Link to="/login">Login</Link>
       </p>
     </div>
   );
 };
 
-export default LoginView;
+export default CreateUserView;

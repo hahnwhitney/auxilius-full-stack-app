@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router";
 import { AuthProvider } from "./providers/auth/auth-provider";
 import ProtectedRoute from "./components/ProtectedRoute";
 import HomeView from "./views/HomeView";
+import CreateUserView from "./views/CreateUserView";
 import LoginView from "./views/LoginView";
 import TaskBoardView from "./views/TaskBoardView";
 
@@ -10,6 +11,7 @@ const App = () => (
     <Routes>
       <Route path="/" element={<HomeView />} />
       <Route path="/login" element={<LoginView />} />
+      <Route path="/signup" element={<CreateUserView />} />
 
       {/* Protected Routes */}
       <Route element={<ProtectedRoute />}>

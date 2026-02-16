@@ -25,7 +25,7 @@ const TaskColumn = ({
     <h2>{statusName}</h2>
     {tasks.length === 0 ? (
       <p
-        styles={{
+        style={{
           color: "var(--dark-blue-primary)",
           fontStyle: "italic",
           textAlign: "center",
