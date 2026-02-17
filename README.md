@@ -1,73 +1,97 @@
-# React + TypeScript + Vite
+## Quick Start Instructions
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+- Make sure you have Docker desktop running
+- In the terminal, run `docker compose up`
 
-Currently, two official plugins are available:
+## Features Implemented
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-## React Compiler
+## Tech Stack Choices
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-## Expanding the ESLint configuration
+## System Architecture
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+1. TaskItem sends changes via fetch PATCH through the Vite proxy to Express
+2. Express updates the DB and emits task:updated via Socket.IO to all connected clients
+3. TaskBoardView receives the socket event, updates React state, and every connected browser window re-renders
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+```mermaid
+  graph TB
+      subgraph Docker["Docker Compose"]
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+          subgraph Frontend["Frontend Container :5173"]
+              Vite["Vite Dev Server<br/>(HMR + Proxy)"]
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+              subgraph React["React SPA"]
+                  App["App<br/>(AuthProvider + Routes)"]
+
+                  App --> HomeView["/&ensp; HomeView"]
+                  App --> LoginView["/login&ensp; LoginView"]
+                  App --> CreateUserView["/signup&ensp; CreateUserView"]
+                  App --> ProtectedRoute["ProtectedRoute"]
+                  ProtectedRoute --> TaskBoardView["/taskboard&ensp; TaskBoardView"]
+
+                  TaskBoardView --> TaskForm["TaskForm"]
+                  TaskBoardView --> TaskColumnTodo["TaskColumn<br/>To Do"]
+                  TaskBoardView --> TaskColumnIP["TaskColumn<br/>In Progress"]
+                  TaskBoardView --> TaskColumnDone["TaskColumn<br/>Done"]
+
+                  TaskColumnTodo --> TaskItem["TaskItem(s)"]
+                  TaskColumnIP --> TaskItem
+                  TaskColumnDone --> TaskItem
+              end
+          end
+
+          subgraph Backend["Backend Container :3001"]
+              Express["Express Server"]
+
+              subgraph REST["REST API"]
+                  GET_tasks["GET /api/tasks"]
+                  POST_tasks["POST /api/tasks"]
+                  PATCH_tasks["PATCH /api/tasks/:id"]
+                  DELETE_tasks["DELETE /api/tasks/:id"]
+                  GET_user["GET /api/users/:username"]
+                  POST_user["POST /api/users"]
+              end
+
+              subgraph SocketIO["Socket.IO Server"]
+                  direction LR
+                  Incoming["Incoming Events<br/>task:add<br/>task:update<br/>task:delete"]
+                  Outgoing["Outgoing Events<br/>tasks:initial<br/>task:added<br/>task:updated<br/>task:deleted"]
+              end
+
+              Express --- REST
+              Express --- SocketIO
+              DB_Module["db.ts<br/>getAllTasks · insertTask<br/>updateTask · deleteTask<br/>getUserByUsername · insertUser"]
+          end
+
+          subgraph Postgres["PostgreSQL :5432"]
+              Tasks[("tasks<br/>id · title · description<br/>status · created_at · updated_at")]
+              Users[("users<br/>id · username<br/>created_at · updated_at")]
+          end
+      end
+
+      Vite -- "/api/* proxy" --> Express
+      Vite -- "/socket.io/* proxy (ws)" --> SocketIO
+
+      TaskItem -- "fetch PATCH/DELETE" --> Vite
+      TaskForm -- "socket: task:add" --> Vite
+      TaskBoardView -. "socket: task:added,<br/>task:updated, task:deleted" .-> Vite
+
+      REST --> DB_Module
+      SocketIO --> DB_Module
+      DB_Module --> Postgres
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Time Log
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## Key Technical Decisions & Tradeoffs
+
+
+## Known Limitations
+
+
+## What to Improve
+
+
