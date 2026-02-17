@@ -111,34 +111,17 @@ describe("TaskBoardView", () => {
     expect(screen.getByTestId(TaskStatus.IN_PROGRESS)).toBeInTheDocument();
   });
 
-  it("handles task:statusChanged event", () => {
+  it("handles task:updated event", () => {
     triggerSocketEvent(socket, "tasks:initial", [
       { id: "1", title: "A", description: "B", status: TaskStatus.TODO },
     ]);
-    triggerSocketEvent(socket, "task:statusChanged", {
+    triggerSocketEvent(socket, "task:updated", {
       id: "1",
+      title: "Z",
+      description: "ZZ",
       status: TaskStatus.DONE,
     });
     expect(screen.getByTestId(TaskStatus.DONE)).toBeInTheDocument();
-  });
-
-  it("handles task:titleChanged event", () => {
-    triggerSocketEvent(socket, "tasks:initial", [
-      { id: "1", title: "A", description: "B", status: TaskStatus.TODO },
-    ]);
-    triggerSocketEvent(socket, "task:titleChanged", { id: "1", title: "Z" });
-    expect(screen.getByTestId(TaskStatus.TODO)).toBeInTheDocument();
-  });
-
-  it("handles task:descriptionChanged event", () => {
-    triggerSocketEvent(socket, "tasks:initial", [
-      { id: "1", title: "A", description: "B", status: TaskStatus.TODO },
-    ]);
-    triggerSocketEvent(socket, "task:descriptionChanged", {
-      id: "1",
-      description: "ZZ",
-    });
-    expect(screen.getByTestId(TaskStatus.TODO)).toBeInTheDocument();
   });
 
   it("handles task:deleted event", () => {
@@ -162,7 +145,7 @@ describe("TaskBoardView", () => {
     });
   });
 
-  it("emits task:titleChange, descriptionChange, statusChange, delete on handlers", () => {
+  it("emits task:update and task:delete on handlers", () => {
     const task = {
       id: "1",
       title: "A",

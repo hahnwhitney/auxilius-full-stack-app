@@ -6,21 +6,9 @@ interface TaskColumnProps {
   tasks: Task[];
   status: TaskStatus;
   statusName: string;
-  onTitleChange: (id: string, title: string) => void;
-  onDescriptionChange: (id: string, description: string) => void;
-  onStatusChange: (id: string, status: string) => void;
-  onDelete: (id: string) => void;
 }
 
-const TaskColumn = ({
-  tasks,
-  status,
-  statusName,
-  onTitleChange,
-  onDescriptionChange,
-  onStatusChange,
-  onDelete,
-}: TaskColumnProps) => (
+const TaskColumn = ({ tasks, status, statusName }: TaskColumnProps) => (
   <div className={`${styles.column} ${styles[status]}`}>
     <h2>{statusName}</h2>
     {tasks.length === 0 ? (
@@ -35,16 +23,7 @@ const TaskColumn = ({
         No tasks yet
       </p>
     ) : (
-      tasks.map((task) => (
-        <TaskItem
-          key={task.id}
-          task={task}
-          onTitleChange={onTitleChange}
-          onDescriptionChange={onDescriptionChange}
-          onStatusChange={onStatusChange}
-          onDelete={onDelete}
-        />
-      ))
+      tasks.map((task) => <TaskItem key={task.id} task={task} />)
     )}
   </div>
 );

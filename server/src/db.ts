@@ -36,38 +36,31 @@ export async function insertTask(
   return rows[0];
 }
 
-export async function updateTaskStatus(
+export async function updateTask(
   id: string,
-  status: TaskStatus,
+  fields: Partial<Pick<Task, "title" | "description" | "status">>,
 ): Promise<Task | null> {
+  const sets: string[] = [];
+  const values: unknown[] = [];
+  let i = 1;
+  if (fields.title !== undefined) {
+    sets.push(`title = $${i++}`);
+    values.push(fields.title);
+  }
+  if (fields.description !== undefined) {
+    sets.push(`description = $${i++}`);
+    values.push(fields.description);
+  }
+  if (fields.status !== undefined) {
+    sets.push(`status = $${i++}`);
+    values.push(fields.status);
+  }
+  if (sets.length === 0) return null;
+  values.push(id);
   const { rows } = await pool.query<Task>(
-    `UPDATE tasks SET status = $1 WHERE id = $2
+    `UPDATE tasks SET ${sets.join(", ")} WHERE id = $${i}
      RETURNING id, title, description, status`,
-    [status, id],
-  );
-  return rows[0] ?? null;
-}
-
-export async function updateTaskTitle(
-  id: string,
-  title: string,
-): Promise<Task | null> {
-  const { rows } = await pool.query<Task>(
-    `UPDATE tasks SET title = $1 WHERE id = $2
-     RETURNING id, title, description, status`,
-    [title, id],
-  );
-  return rows[0] ?? null;
-}
-
-export async function updateTaskDescription(
-  id: string,
-  description: string,
-): Promise<Task | null> {
-  const { rows } = await pool.query<Task>(
-    `UPDATE tasks SET description = $1 WHERE id = $2
-     RETURNING id, title, description, status`,
-    [description, id],
+    values,
   );
   return rows[0] ?? null;
 }

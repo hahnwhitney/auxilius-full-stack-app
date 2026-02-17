@@ -1,14 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { TaskStatus, type Task } from "../../types";
 import styles from "./index.module.css";
-
-interface TaskItemProps {
-  task: Task;
-  onTitleChange: (id: string, title: string) => void;
-  onDescriptionChange: (id: string, description: string) => void;
-  onStatusChange: (id: string, status: string) => void;
-  onDelete: (id: string) => void;
-}
 
 const STATUS_OPTIONS = [
   { value: TaskStatus.TODO, label: "To Do" },
@@ -16,20 +8,66 @@ const STATUS_OPTIONS = [
   { value: TaskStatus.DONE, label: "Done" },
 ];
 
-function TaskItem({
-  task,
-  onTitleChange,
-  onDescriptionChange,
-  onStatusChange,
-  onDelete,
-}: TaskItemProps) {
+function TaskItem({ task }: { task: Task }) {
   const [title, setTitle] = useState(task.title);
   const [description, setDescription] = useState(task.description);
+
+  useEffect(() => {
+    if (title !== task.title) {
+      setTitle(task.title);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [task.title]);
+
+  useEffect(() => {
+    if (description !== task.description) {
+      setDescription(task.description);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [task.description]);
+
+  const patchTask = async (id: string, fields: Record<string, string>) => {
+    try {
+      const res = await fetch(`/api/tasks/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(fields),
+      });
+      if (!res.ok) {
+        console.error("Failed to update task:", res.statusText);
+      }
+    } catch (err) {
+      console.error("Failed to update task:", err);
+    }
+  };
+
+  const handleTitleChange = (id: string, title: string) => {
+    patchTask(id, { title });
+  };
+
+  const handleDescriptionChange = (id: string, description: string) => {
+    patchTask(id, { description });
+  };
+
+  const handleStatusChange = (id: string, status: string) => {
+    patchTask(id, { status });
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      const res = await fetch(`/api/tasks/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        console.error("Failed to delete task:", res.statusText);
+      }
+    } catch (err) {
+      console.error("Failed to delete task:", err);
+    }
+  };
 
   const handleTitleBlur = () => {
     const trimmed = title.trim();
     if (trimmed.length > 0 && trimmed !== task.title) {
-      onTitleChange(task.id, trimmed);
+      handleTitleChange(task.id, trimmed);
     } else {
       setTitle(task.title);
     }
@@ -40,7 +78,7 @@ function TaskItem({
       (e.target as HTMLInputElement).blur();
       const trimmed = title.trim();
       if (trimmed.length > 0 && trimmed !== task.title) {
-        onTitleChange(task.id, trimmed);
+        handleTitleChange(task.id, trimmed);
       } else {
         setTitle(task.title);
       }
@@ -49,7 +87,7 @@ function TaskItem({
 
   const handleDescriptionBlur = () => {
     if (description !== task.description) {
-      onDescriptionChange(task.id, description);
+      handleDescriptionChange(task.id, description);
     }
   };
 
@@ -59,7 +97,7 @@ function TaskItem({
     if (e.key === "Enter") {
       (e.target as HTMLInputElement).blur();
       if (description !== task.description) {
-        onDescriptionChange(task.id, description);
+        handleDescriptionChange(task.id, description);
       }
     }
   };
@@ -95,7 +133,7 @@ function TaskItem({
         <span>Status</span>
         <select
           value={task.status}
-          onChange={(e) => onStatusChange(task.id, e.target.value)}
+          onChange={(e) => handleStatusChange(task.id, e.target.value)}
           aria-label="Status"
         >
           {STATUS_OPTIONS.map((opt) => (
@@ -108,7 +146,7 @@ function TaskItem({
 
       <div className={styles.deleteBtnWrapper}>
         <button
-          onClick={() => onDelete(task.id)}
+          onClick={() => handleDelete(task.id)}
           className={styles.taskDeleteBtn}
           aria-label={`Delete ${task.title}`}
         >

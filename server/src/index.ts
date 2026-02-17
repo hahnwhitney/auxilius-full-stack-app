@@ -6,9 +6,7 @@ import {
   connectDb,
   getAllTasks,
   insertTask,
-  updateTaskStatus,
-  updateTaskTitle,
-  updateTaskDescription,
+  updateTask,
   deleteTask,
   getUserByUsername,
   insertUser,
@@ -67,6 +65,85 @@ app.post("/api/users", async (req, res) => {
   }
 });
 
+app.get("/api/tasks", async (_req, res) => {
+  try {
+    const tasks = await getAllTasks();
+    res.json(tasks);
+  } catch (err) {
+    console.error("Failed to fetch tasks:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+app.post("/api/tasks", async (req, res) => {
+  try {
+    const { title, description, status } = req.body;
+    if (!title || typeof title !== "string" || title.trim().length === 0) {
+      res.status(400).json({ error: "Title is required" });
+      return;
+    }
+    if (
+      status !== undefined &&
+      !Object.values(TaskStatus).includes(status as TaskStatus)
+    ) {
+      res.status(400).json({ error: "Invalid status" });
+      return;
+    }
+    const task = await insertTask(
+      title.trim(),
+      description ?? "",
+      (status as TaskStatus) ?? TaskStatus.TODO,
+    );
+    io.emit("task:added", task);
+    res.status(201).json(task);
+  } catch (err) {
+    console.error("Failed to create task:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+app.patch("/api/tasks/:id", async (req, res) => {
+  try {
+    const { title, description, status } = req.body;
+    if (
+      status !== undefined &&
+      !Object.values(TaskStatus).includes(status as TaskStatus)
+    ) {
+      res.status(400).json({ error: "Invalid status" });
+      return;
+    }
+    const task = await updateTask(req.params.id, {
+      title,
+      description,
+      status,
+    });
+    if (task) {
+      io.emit("task:updated", task);
+      res.json(task);
+    } else {
+      res.status(404).json({ error: "Task not found" });
+    }
+  } catch (err) {
+    console.error("Failed to update task:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+app.delete("/api/tasks/:id", async (req, res) => {
+  try {
+    const deleted = await deleteTask(req.params.id);
+    if (deleted) {
+      io.emit("task:deleted", req.params.id);
+      res.json({ success: true });
+    } else {
+      res.status(404).json({ error: "Task not found" });
+    }
+  } catch (err) {
+    console.error("Failed to delete task:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 io.on("connection", (socket) => {
   console.log(`Client connected: ${socket.id}`);
 
@@ -94,47 +171,30 @@ io.on("connection", (socket) => {
   );
 
   socket.on(
-    "task:statusChange",
-    async ({ id, status }: { id: string; status: string }) => {
+    "task:update",
+    async ({
+      id,
+      fields,
+    }: {
+      id: string;
+      fields: { title?: string; description?: string; status?: string };
+    }) => {
       try {
-        if (!Object.values(TaskStatus).includes(status as TaskStatus)) return;
-        const task = await updateTaskStatus(id, status as TaskStatus);
+        if (
+          fields.status !== undefined &&
+          !Object.values(TaskStatus).includes(fields.status as TaskStatus)
+        )
+          return;
+        const task = await updateTask(id, {
+          title: fields.title?.trim(),
+          description: fields.description,
+          status: fields.status as TaskStatus | undefined,
+        });
         if (task) {
-          io.emit("task:statusChanged", { id, status: task.status });
+          io.emit("task:updated", task);
         }
       } catch (err) {
-        console.error("Failed to update task status:", err);
-      }
-    },
-  );
-
-  socket.on(
-    "task:titleChange",
-    async ({ id, title }: { id: string; title: string }) => {
-      try {
-        const task = await updateTaskTitle(id, title.trim());
-        if (task) {
-          io.emit("task:titleChanged", { id, title: task.title });
-        }
-      } catch (err) {
-        console.error("Failed to update task title:", err);
-      }
-    },
-  );
-
-  socket.on(
-    "task:descriptionChange",
-    async ({ id, description }: { id: string; description: string }) => {
-      try {
-        const task = await updateTaskDescription(id, description);
-        if (task) {
-          io.emit("task:descriptionChanged", {
-            id,
-            description: task.description,
-          });
-        }
-      } catch (err) {
-        console.error("Failed to update task description:", err);
+        console.error("Failed to update task:", err);
       }
     },
   );

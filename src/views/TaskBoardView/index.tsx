@@ -24,32 +24,9 @@ function TaskBoardView() {
       setTasks((prev) => [...prev, task]);
     });
 
-    newSocket.on(
-      "task:statusChanged",
-      ({ id, status }: { id: string; status: TaskStatus }) => {
-        setTasks((prev) =>
-          prev.map((t) => (t.id === id ? { ...t, status } : t)),
-        );
-      },
-    );
-
-    newSocket.on(
-      "task:titleChanged",
-      ({ id, title }: { id: string; title: string }) => {
-        setTasks((prev) =>
-          prev.map((t) => (t.id === id ? { ...t, title } : t)),
-        );
-      },
-    );
-
-    newSocket.on(
-      "task:descriptionChanged",
-      ({ id, description }: { id: string; description: string }) => {
-        setTasks((prev) =>
-          prev.map((t) => (t.id === id ? { ...t, description } : t)),
-        );
-      },
-    );
+    newSocket.on("task:updated", (task: Task) => {
+      setTasks((prev) => prev.map((t) => (t.id === task.id ? task : t)));
+    });
 
     newSocket.on("task:deleted", (id: string) => {
       setTasks((prev) => prev.filter((t) => t.id !== id));
@@ -69,22 +46,6 @@ function TaskBoardView() {
     status: TaskStatus,
   ) => {
     socket?.emit("task:add", { title, description, status });
-  };
-
-  const handleTitleChange = (id: string, title: string) => {
-    socket?.emit("task:titleChange", { id, title });
-  };
-
-  const handleDescriptionChange = (id: string, description: string) => {
-    socket?.emit("task:descriptionChange", { id, description });
-  };
-
-  const handleStatusChange = (id: string, status: string) => {
-    socket?.emit("task:statusChange", { id, status });
-  };
-
-  const handleDelete = (id: string) => {
-    socket?.emit("task:delete", id);
   };
 
   const toBeDoneTasks = tasks.filter((task) => task.status === TaskStatus.TODO);
@@ -112,30 +73,18 @@ function TaskBoardView() {
           tasks={toBeDoneTasks}
           status={TaskStatus.TODO}
           statusName="To Do"
-          onTitleChange={handleTitleChange}
-          onDescriptionChange={handleDescriptionChange}
-          onStatusChange={handleStatusChange}
-          onDelete={handleDelete}
         />
 
         <TaskColumn
           tasks={inProgressTasks}
           status={TaskStatus.IN_PROGRESS}
           statusName="In Progress"
-          onTitleChange={handleTitleChange}
-          onDescriptionChange={handleDescriptionChange}
-          onStatusChange={handleStatusChange}
-          onDelete={handleDelete}
         />
 
         <TaskColumn
           tasks={completedTasks}
           status={TaskStatus.DONE}
           statusName="Done"
-          onTitleChange={handleTitleChange}
-          onDescriptionChange={handleDescriptionChange}
-          onStatusChange={handleStatusChange}
-          onDelete={handleDelete}
         />
       </div>
     </div>

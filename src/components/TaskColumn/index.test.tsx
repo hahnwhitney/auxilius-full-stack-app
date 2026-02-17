@@ -24,10 +24,6 @@ describe("TaskColumn", () => {
   ];
   const status = TaskStatus.TODO;
   const statusName = "To Do";
-  const onTitleChange = jest.fn();
-  const onDescriptionChange = jest.fn();
-  const onStatusChange = jest.fn();
-  const onDelete = jest.fn();
 
   afterEach(() => {
     jest.clearAllMocks();
@@ -35,15 +31,7 @@ describe("TaskColumn", () => {
 
   it("renders column with correct status and name", () => {
     render(
-      <TaskColumn
-        tasks={mockTasks}
-        status={status}
-        statusName={statusName}
-        onTitleChange={onTitleChange}
-        onDescriptionChange={onDescriptionChange}
-        onStatusChange={onStatusChange}
-        onDelete={onDelete}
-      />,
+      <TaskColumn tasks={mockTasks} status={status} statusName={statusName} />,
     );
     expect(screen.getByText(statusName)).toBeInTheDocument();
     expect(document.querySelector(`.${status}`)).toBeInTheDocument();
@@ -51,15 +39,7 @@ describe("TaskColumn", () => {
 
   it("renders TaskItem for each task", () => {
     render(
-      <TaskColumn
-        tasks={mockTasks}
-        status={status}
-        statusName={statusName}
-        onTitleChange={onTitleChange}
-        onDescriptionChange={onDescriptionChange}
-        onStatusChange={onStatusChange}
-        onDelete={onDelete}
-      />,
+      <TaskColumn tasks={mockTasks} status={status} statusName={statusName} />,
     );
     const items = screen.getAllByTestId("task-item");
     expect(items).toHaveLength(mockTasks.length);
@@ -67,40 +47,16 @@ describe("TaskColumn", () => {
 
   it("passes correct props to TaskItem", () => {
     render(
-      <TaskColumn
-        tasks={mockTasks}
-        status={status}
-        statusName={statusName}
-        onTitleChange={onTitleChange}
-        onDescriptionChange={onDescriptionChange}
-        onStatusChange={onStatusChange}
-        onDelete={onDelete}
-      />,
+      <TaskColumn tasks={mockTasks} status={status} statusName={statusName} />,
     );
     expect(MockedTaskItem).toHaveBeenCalledTimes(mockTasks.length);
     mockTasks.forEach((task, idx) => {
-      expect(MockedTaskItem.mock.calls[idx][0]).toMatchObject({
-        task,
-        onTitleChange,
-        onDescriptionChange,
-        onStatusChange,
-        onDelete,
-      });
+      expect(MockedTaskItem.mock.calls[idx][0]).toMatchObject({ task });
     });
   });
 
   it("renders nothing if tasks array is empty", () => {
-    render(
-      <TaskColumn
-        tasks={[]}
-        status={status}
-        statusName={statusName}
-        onTitleChange={onTitleChange}
-        onDescriptionChange={onDescriptionChange}
-        onStatusChange={onStatusChange}
-        onDelete={onDelete}
-      />,
-    );
+    render(<TaskColumn tasks={[]} status={status} statusName={statusName} />);
     expect(screen.queryByTestId("task-item")).toBeNull();
   });
 });
