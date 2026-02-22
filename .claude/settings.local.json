@@ -1,5 +1,9 @@
 {
   "permissions": {
-    "allow": ["Bash(docker compose up:*)"]
+    "allow": [
+      "Bash(docker compose up:*)",
+      "Bash(node:*)",
+      "Bash(npx tsc:*)"
+    ]
   }
 }
