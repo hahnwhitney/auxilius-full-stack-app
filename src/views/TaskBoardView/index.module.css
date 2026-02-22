@@ -40,3 +40,11 @@
   text-align: center;
   border-bottom: 2px solid var(--dark-blue-primary);
 }
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}

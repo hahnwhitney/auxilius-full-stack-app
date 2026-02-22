@@ -6,8 +6,8 @@ export function registerTaskSocketHandlers(io: Server) {
   io.on("connection", (socket) => {
     console.log(`Client connected: ${socket.id}`);
 
-    getAllTasks()
-      .then((tasks) => socket.emit("tasks:initial", tasks))
+    getAllTasks(undefined, 1, 20)
+      .then(({ data }) => socket.emit("tasks:initial", data))
       .catch((err) => console.error("Failed to fetch tasks:", err));
 
     socket.on(

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import { TaskStatus, type Task } from "../../types";
 import { addTask, getTasks } from "../../api/tasks";
@@ -12,11 +12,14 @@ const COLUMNS = [
   { status: TaskStatus.DONE, statusName: "Done" },
 ];
 
+const LIMIT = 20;
+
 function TaskBoardView() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [connected, setConnected] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<TaskStatus | null>(null);
-  const isFirstRender = useRef(true);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
 
   useEffect(() => {
     const newSocket = io();
@@ -25,7 +28,7 @@ function TaskBoardView() {
     newSocket.on("disconnect", () => setConnected(false));
 
     newSocket.on("tasks:initial", (initialTasks: Task[]) => {
-      setTasks(initialTasks);
+      setTasks(Array.isArray(initialTasks) ? initialTasks : []);
     });
 
     return () => {
@@ -34,12 +37,13 @@ function TaskBoardView() {
   }, []);
 
   useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
-    }
-    getTasks(selectedStatus ?? undefined).then(setTasks).catch(console.error);
-  }, [selectedStatus]);
+    getTasks(selectedStatus ?? undefined, page, LIMIT)
+      .then(({ data, total }) => {
+        setTasks(data ?? []);
+        setTotal(total ?? 0);
+      })
+      .catch(console.error);
+  }, [selectedStatus, page]);
 
   const handleAdd = (
     title: string,
@@ -49,9 +53,16 @@ function TaskBoardView() {
     addTask(title, description, status);
   };
 
+  const handleStatusChange = (newStatus: TaskStatus | null) => {
+    setSelectedStatus(newStatus);
+    setPage(1);
+  };
+
   const visibleColumns = selectedStatus
     ? COLUMNS.filter((c) => c.status === selectedStatus)
     : COLUMNS;
+
+  const totalPages = Math.ceil(total / LIMIT);
 
   return (
     <div>
@@ -60,7 +71,7 @@ function TaskBoardView() {
         <select
           value={selectedStatus ?? ""}
           onChange={(e) =>
-            setSelectedStatus((e.target.value as TaskStatus) || null)
+            handleStatusChange((e.target.value as TaskStatus) || null)
           }
         >
           <option value="">All</option>
@@ -86,6 +97,23 @@ function TaskBoardView() {
           />
         ))}
       </div>
+
+      {total > 0 && (
+        <div className={styles.pagination}>
+          <button onClick={() => setPage((p) => p - 1)} disabled={page === 1}>
+            Previous
+          </button>
+          <span>
+            Page {page} of {totalPages}
+          </span>
+          <button
+            onClick={() => setPage((p) => p + 1)}
+            disabled={page >= totalPages}
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
   );
 }

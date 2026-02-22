@@ -1,9 +1,23 @@
 import { toast } from "react-toastify";
 import { TaskStatus, type Task } from "../types";
 
-export const getTasks = async (status?: TaskStatus): Promise<Task[]> => {
-  const url = status ? `/api/tasks?status=${status}` : "/api/tasks";
-  const res = await fetch(url);
+export interface PaginatedTasks {
+  data: Task[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export const getTasks = async (
+  status?: TaskStatus,
+  page = 1,
+  limit = 20,
+): Promise<PaginatedTasks> => {
+  const params = new URLSearchParams();
+  if (status) params.set("status", status);
+  params.set("page", String(page));
+  params.set("limit", String(limit));
+  const res = await fetch(`/api/tasks?${params}`);
   if (!res.ok) throw new Error(`Failed to fetch tasks: ${res.statusText}`);
   return res.json();
 };

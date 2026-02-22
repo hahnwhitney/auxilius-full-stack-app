@@ -19,6 +19,8 @@ export const updateTaskSchema = z
 
 export const getTasksQuerySchema = z.object({
   status: z.nativeEnum(TaskStatus).optional(),
+  page: z.coerce.number().int().min(1).optional().default(1),
+  limit: z.coerce.number().int().min(1).max(100).optional().default(20),
 });
 
 export const createUserSchema = z.object({

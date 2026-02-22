@@ -1,6 +1,6 @@
 import pg from "pg";
 import { drizzle } from "drizzle-orm/node-postgres";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { tasks, users } from "./schema.js";
 import type { Task, TaskStatus, User } from "./types.js";
 
@@ -18,19 +18,44 @@ export async function connectDb(): Promise<void> {
   }
 }
 
-export async function getAllTasks(status?: TaskStatus): Promise<Task[]> {
-  const query = db
-    .select({
-      id: tasks.id,
-      title: tasks.title,
-      description: tasks.description,
-      status: tasks.status,
-    })
-    .from(tasks);
+export async function getAllTasks(
+  status?: TaskStatus,
+  page = 1,
+  limit = 20,
+): Promise<{ data: Task[]; total: number }> {
+  const offset = (page - 1) * limit;
+  const fields = {
+    id: tasks.id,
+    title: tasks.title,
+    description: tasks.description,
+    status: tasks.status,
+  };
+
   if (status) {
-    return query.where(eq(tasks.status, status)).orderBy(tasks.createdAt);
+    const [{ count }] = await db
+      .select({ count: sql<number>`cast(count(*) as int)` })
+      .from(tasks)
+      .where(eq(tasks.status, status));
+    const data = await db
+      .select(fields)
+      .from(tasks)
+      .where(eq(tasks.status, status))
+      .orderBy(tasks.createdAt)
+      .limit(limit)
+      .offset(offset);
+    return { data, total: Number(count) };
   }
-  return query.orderBy(tasks.createdAt);
+
+  const [{ count }] = await db
+    .select({ count: sql<number>`cast(count(*) as int)` })
+    .from(tasks);
+  const data = await db
+    .select(fields)
+    .from(tasks)
+    .orderBy(tasks.createdAt)
+    .limit(limit)
+    .offset(offset);
+  return { data, total: Number(count) };
 }
 
 export async function insertTask(

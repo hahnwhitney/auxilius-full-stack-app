@@ -7,7 +7,9 @@ jest.mock("../../api/tasks", () => ({
   addTask: jest.fn().mockResolvedValue(undefined),
   patchTask: jest.fn().mockResolvedValue(undefined),
   deleteTask: jest.fn().mockResolvedValue(undefined),
-  getTasks: jest.fn().mockResolvedValue([]),
+  getTasks: jest
+    .fn()
+    .mockResolvedValue({ data: [], total: 0, page: 1, limit: 20 }),
 }));
 jest.mock("socket.io-client", () => ({
   io: jest.fn(() => {
@@ -70,7 +72,15 @@ describe("TaskBoardView", () => {
   };
 
   beforeEach(async () => {
-    (io as jest.Mock).mockClear();
+    jest.clearAllMocks();
+    // Restore default mock return value after clearAllMocks
+    const { getTasks } = await import("../../api/tasks");
+    (getTasks as jest.Mock).mockResolvedValue({
+      data: [],
+      total: 0,
+      page: 1,
+      limit: 20,
+    });
     await act(async () => {
       render(<TaskBoardView />);
     });
@@ -134,7 +144,7 @@ describe("TaskBoardView", () => {
         target: { value: TaskStatus.IN_PROGRESS },
       });
     });
-    expect(getTasks).toHaveBeenCalledWith(TaskStatus.IN_PROGRESS);
+    expect(getTasks).toHaveBeenCalledWith(TaskStatus.IN_PROGRESS, 1, 20);
   });
 
   it("shows only the matching column when a status is selected", async () => {
@@ -175,6 +185,71 @@ describe("TaskBoardView", () => {
     await act(async () => {
       fireEvent.change(filterSelect, { target: { value: "" } });
     });
-    expect(getTasks).toHaveBeenCalledWith(undefined);
+    expect(getTasks).toHaveBeenCalledWith(undefined, 1, 20);
+  });
+
+  it("does not render pagination controls when total is 0", () => {
+    expect(screen.queryByText(/Page \d+ of \d+/)).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Previous" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Next" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("renders pagination controls with correct label when total > LIMIT", async () => {
+    const { getTasks } = await import("../../api/tasks");
+    (getTasks as jest.Mock).mockResolvedValueOnce({
+      data: [],
+      total: 25,
+      page: 1,
+      limit: 20,
+    });
+    const filterSelect = screen.getByRole("combobox");
+    await act(async () => {
+      fireEvent.change(filterSelect, {
+        target: { value: TaskStatus.IN_PROGRESS },
+      });
+    });
+    expect(screen.getByText("Page 1 of 2")).toBeInTheDocument();
+  });
+
+  it("disables Previous on first page and Next on last page", async () => {
+    const { getTasks } = await import("../../api/tasks");
+    (getTasks as jest.Mock).mockResolvedValueOnce({
+      data: [],
+      total: 25,
+      page: 1,
+      limit: 20,
+    });
+    const filterSelect = screen.getByRole("combobox");
+    await act(async () => {
+      fireEvent.change(filterSelect, {
+        target: { value: TaskStatus.IN_PROGRESS },
+      });
+    });
+    expect(screen.getByRole("button", { name: "Previous" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Next" })).not.toBeDisabled();
+  });
+
+  it("clicking Next calls getTasks with page 2", async () => {
+    const { getTasks } = await import("../../api/tasks");
+    (getTasks as jest.Mock).mockResolvedValueOnce({
+      data: [],
+      total: 25,
+      page: 1,
+      limit: 20,
+    });
+    const filterSelect = screen.getByRole("combobox");
+    await act(async () => {
+      fireEvent.change(filterSelect, {
+        target: { value: TaskStatus.IN_PROGRESS },
+      });
+    });
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    });
+    expect(getTasks).toHaveBeenCalledWith(TaskStatus.IN_PROGRESS, 2, 20);
   });
 });

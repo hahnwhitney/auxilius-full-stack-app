@@ -18,8 +18,9 @@ export function createTaskRouter(io: Server) {
         res.status(400).json({ error: result.error.issues[0].message });
         return;
       }
-      const tasks = await getAllTasks(result.data.status);
-      res.json(tasks);
+      const { status, page, limit } = result.data;
+      const { data, total } = await getAllTasks(status, page, limit);
+      res.json({ data, total, page, limit });
     } catch (err) {
       console.error("Failed to fetch tasks:", err);
       res.status(500).json({ error: "Internal server error" });
