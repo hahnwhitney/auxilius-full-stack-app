@@ -147,7 +147,7 @@ Docker can be tricky to set up by hand, but AI is a great tool for scaffolding a
 
 30 minutes -- Set up the database
 
-15 minutes -- Basic maniual testing
+15 minutes -- Basic manual testing
 
 
 ## Key Technical Decisions & Tradeoffs
