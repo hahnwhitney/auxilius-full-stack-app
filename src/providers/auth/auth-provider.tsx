@@ -14,7 +14,7 @@ interface AuthProviderProps {
 const AuthContext = createContext<AuthContextValues | undefined>(undefined);
 
 const AuthProvider = ({ children }: AuthProviderProps) => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [currentUsername, setCurrentUsername] = useState<string>("");
 
   const contextValue: AuthContextValues = {
