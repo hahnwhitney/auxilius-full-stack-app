@@ -1,7 +1,8 @@
 import { Router } from "express";
 import type { Server } from "socket.io";
-import { TaskStatus } from "../types.js";
 import { getAllTasks, insertTask, updateTask, deleteTask } from "../db.js";
+import { createTaskSchema, updateTaskSchema } from "../schemas.js";
+import { TaskStatus } from "../types.js";
 
 export function createTaskRouter(io: Server) {
   const router = Router();
@@ -18,22 +19,16 @@ export function createTaskRouter(io: Server) {
 
   router.post("/", async (req, res) => {
     try {
-      const { title, description, status } = req.body;
-      if (!title || typeof title !== "string" || title.trim().length === 0) {
-        res.status(400).json({ error: "Title is required" });
+      const result = createTaskSchema.safeParse(req.body);
+      if (!result.success) {
+        res.status(400).json({ error: result.error.issues[0].message });
         return;
       }
-      if (
-        status !== undefined &&
-        !Object.values(TaskStatus).includes(status as TaskStatus)
-      ) {
-        res.status(400).json({ error: "Invalid status" });
-        return;
-      }
+      const { title, description, status } = result.data;
       const task = await insertTask(
-        title.trim(),
+        title,
         description ?? "",
-        (status as TaskStatus) ?? TaskStatus.TODO,
+        status ?? TaskStatus.TODO,
       );
       io.emit("task:added", task);
       res.status(201).json(task);
@@ -45,15 +40,12 @@ export function createTaskRouter(io: Server) {
 
   router.patch("/:id", async (req, res) => {
     try {
-      const { title, description, status } = req.body;
-      if (
-        status !== undefined &&
-        !Object.values(TaskStatus).includes(status as TaskStatus)
-      ) {
-        res.status(400).json({ error: "Invalid status" });
+      const result = updateTaskSchema.safeParse(req.body);
+      if (!result.success) {
+        res.status(400).json({ error: result.error.issues[0].message });
         return;
       }
-      const task = await updateTask(req.params.id, { title, description, status });
+      const task = await updateTask(req.params.id, result.data);
       if (task) {
         io.emit("task:updated", task);
         res.json(task);

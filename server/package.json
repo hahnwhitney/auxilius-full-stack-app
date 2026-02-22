@@ -7,17 +7,22 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "migrate": "tsx src/migrate.ts"
+    "migrate": "tsx src/migrate.ts",
+    "generate": "drizzle-kit generate",
+    "studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "drizzle-orm": "^0.45.1",
     "express": "^5.1.0",
     "pg": "^8.18.0",
-    "socket.io": "^4.8.0"
+    "socket.io": "^4.8.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/express": "^5.0.0",
     "@types/node": "^22.0.0",
     "@types/pg": "^8.16.0",
+    "drizzle-kit": "^0.31.9",
     "tsx": "^4.19.0",
     "typescript": "~5.7.0"
   }
