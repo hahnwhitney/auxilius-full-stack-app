@@ -1,15 +1,24 @@
 import { Router } from "express";
 import type { Server } from "socket.io";
 import { getAllTasks, insertTask, updateTask, deleteTask } from "../db.js";
-import { createTaskSchema, updateTaskSchema } from "../schemas.js";
+import {
+  createTaskSchema,
+  getTasksQuerySchema,
+  updateTaskSchema,
+} from "../schemas.js";
 import { TaskStatus } from "../types.js";
 
 export function createTaskRouter(io: Server) {
   const router = Router();
 
-  router.get("/", async (_req, res) => {
+  router.get("/", async (req, res) => {
     try {
-      const tasks = await getAllTasks();
+      const result = getTasksQuerySchema.safeParse(req.query);
+      if (!result.success) {
+        res.status(400).json({ error: result.error.issues[0].message });
+        return;
+      }
+      const tasks = await getAllTasks(result.data.status);
       res.json(tasks);
     } catch (err) {
       console.error("Failed to fetch tasks:", err);

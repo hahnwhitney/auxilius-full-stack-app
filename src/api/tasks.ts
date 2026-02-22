@@ -1,5 +1,12 @@
 import { toast } from "react-toastify";
-import { TaskStatus } from "../types";
+import { TaskStatus, type Task } from "../types";
+
+export const getTasks = async (status?: TaskStatus): Promise<Task[]> => {
+  const url = status ? `/api/tasks?status=${status}` : "/api/tasks";
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Failed to fetch tasks: ${res.statusText}`);
+  return res.json();
+};
 
 export const addTask = async (
   title: string,

@@ -17,6 +17,10 @@ export const updateTaskSchema = z
     message: "At least one field must be provided",
   });
 
+export const getTasksQuerySchema = z.object({
+  status: z.nativeEnum(TaskStatus).optional(),
+});
+
 export const createUserSchema = z.object({
   username: z.string().trim().min(1, "Username is required"),
 });

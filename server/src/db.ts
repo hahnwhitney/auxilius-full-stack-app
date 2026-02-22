@@ -18,16 +18,19 @@ export async function connectDb(): Promise<void> {
   }
 }
 
-export async function getAllTasks(): Promise<Task[]> {
-  return db
+export async function getAllTasks(status?: TaskStatus): Promise<Task[]> {
+  const query = db
     .select({
       id: tasks.id,
       title: tasks.title,
       description: tasks.description,
       status: tasks.status,
     })
-    .from(tasks)
-    .orderBy(tasks.createdAt);
+    .from(tasks);
+  if (status) {
+    return query.where(eq(tasks.status, status)).orderBy(tasks.createdAt);
+  }
+  return query.orderBy(tasks.createdAt);
 }
 
 export async function insertTask(

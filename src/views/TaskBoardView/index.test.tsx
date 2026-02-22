@@ -7,6 +7,7 @@ jest.mock("../../api/tasks", () => ({
   addTask: jest.fn().mockResolvedValue(undefined),
   patchTask: jest.fn().mockResolvedValue(undefined),
   deleteTask: jest.fn().mockResolvedValue(undefined),
+  getTasks: jest.fn().mockResolvedValue([]),
 }));
 jest.mock("socket.io-client", () => ({
   io: jest.fn(() => {
@@ -78,9 +79,11 @@ describe("TaskBoardView", () => {
 
   it("renders header, connection status, and columns", () => {
     expect(screen.getByText("All Tasks")).toBeInTheDocument();
-    expect(screen.getByText("To Do")).toBeInTheDocument();
-    expect(screen.getByText("In Progress")).toBeInTheDocument();
-    expect(screen.getByText("Done")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "To Do" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "In Progress" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Done" })).toBeInTheDocument();
   });
 
   it("shows 'Disconnected' initially, then 'Connected' on connect", () => {
@@ -110,5 +113,68 @@ describe("TaskBoardView", () => {
     const addBtn = screen.getByText("Add");
     fireEvent.click(addBtn);
     expect(addTask).toHaveBeenCalledWith("title", "desc", TaskStatus.TODO);
+  });
+
+  it("renders a status filter dropdown with All and status options", () => {
+    const filterSelect = screen.getByRole("combobox");
+    expect(filterSelect).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "All" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "To Do" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("option", { name: "In Progress" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Done" })).toBeInTheDocument();
+  });
+
+  it("calls getTasks with the selected status when filter changes", async () => {
+    const { getTasks } = await import("../../api/tasks");
+    const filterSelect = screen.getByRole("combobox");
+    await act(async () => {
+      fireEvent.change(filterSelect, {
+        target: { value: TaskStatus.IN_PROGRESS },
+      });
+    });
+    expect(getTasks).toHaveBeenCalledWith(TaskStatus.IN_PROGRESS);
+  });
+
+  it("shows only the matching column when a status is selected", async () => {
+    const filterSelect = screen.getByRole("combobox");
+    await act(async () => {
+      fireEvent.change(filterSelect, {
+        target: { value: TaskStatus.IN_PROGRESS },
+      });
+    });
+    expect(screen.queryByTestId(TaskStatus.TODO)).not.toBeInTheDocument();
+    expect(screen.getByTestId(TaskStatus.IN_PROGRESS)).toBeInTheDocument();
+    expect(screen.queryByTestId(TaskStatus.DONE)).not.toBeInTheDocument();
+  });
+
+  it("shows all columns when filter is reset to All", async () => {
+    const filterSelect = screen.getByRole("combobox");
+    await act(async () => {
+      fireEvent.change(filterSelect, {
+        target: { value: TaskStatus.IN_PROGRESS },
+      });
+    });
+    await act(async () => {
+      fireEvent.change(filterSelect, { target: { value: "" } });
+    });
+    expect(screen.getByTestId(TaskStatus.TODO)).toBeInTheDocument();
+    expect(screen.getByTestId(TaskStatus.IN_PROGRESS)).toBeInTheDocument();
+    expect(screen.getByTestId(TaskStatus.DONE)).toBeInTheDocument();
+  });
+
+  it("calls getTasks with undefined when filter is reset to All", async () => {
+    const { getTasks } = await import("../../api/tasks");
+    const filterSelect = screen.getByRole("combobox");
+    await act(async () => {
+      fireEvent.change(filterSelect, {
+        target: { value: TaskStatus.IN_PROGRESS },
+      });
+    });
+    await act(async () => {
+      fireEvent.change(filterSelect, { target: { value: "" } });
+    });
+    expect(getTasks).toHaveBeenCalledWith(undefined);
   });
 });
