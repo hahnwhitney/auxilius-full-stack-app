@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { io, type Socket } from "socket.io-client";
+import { io } from "socket.io-client";
 import { TaskStatus, type Task } from "../../types";
 import TaskForm from "../../components/TaskForm";
 import TaskColumn from "../../components/TaskColumn";
@@ -7,7 +7,6 @@ import styles from "./index.module.css";
 
 function TaskBoardView() {
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [socket, setSocket] = useState<Socket | null>(null);
   const [connected, setConnected] = useState(false);
 
   useEffect(() => {
@@ -20,32 +19,28 @@ function TaskBoardView() {
       setTasks(initialTasks);
     });
 
-    newSocket.on("task:added", (task: Task) => {
-      setTasks((prev) => [...prev, task]);
-    });
-
-    newSocket.on("task:updated", (task: Task) => {
-      setTasks((prev) => prev.map((t) => (t.id === task.id ? task : t)));
-    });
-
-    newSocket.on("task:deleted", (id: string) => {
-      setTasks((prev) => prev.filter((t) => t.id !== id));
-    });
-
-    // Defer setSocket to avoid cascading renders
-    Promise.resolve().then(() => setSocket(newSocket));
-
     return () => {
       newSocket.disconnect();
     };
   }, []);
 
-  const handleAdd = (
+  const handleAdd = async (
     title: string,
     description: string,
     status: TaskStatus,
   ) => {
-    socket?.emit("task:add", { title, description, status });
+    try {
+      const res = await fetch("/api/tasks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, description, status }),
+      });
+      if (!res.ok) {
+        console.error("Failed to add task:", res.statusText);
+      }
+    } catch (err) {
+      console.error("Failed to add task:", err);
+    }
   };
 
   const toBeDoneTasks = tasks.filter((task) => task.status === TaskStatus.TODO);
