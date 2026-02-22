@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { io } from "socket.io-client";
 import { TaskStatus, type Task } from "../../types";
 import { addTask, getTasks } from "../../api/tasks";
@@ -21,14 +21,43 @@ function TaskBoardView() {
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
 
+  const selectedStatusRef = useRef(selectedStatus);
+
   useEffect(() => {
-    const newSocket = io();
+    selectedStatusRef.current = selectedStatus;
+  }, [selectedStatus]);
+
+  useEffect(() => {
+    const newSocket = io({ forceNew: true });
 
     newSocket.on("connect", () => setConnected(true));
     newSocket.on("disconnect", () => setConnected(false));
 
-    newSocket.on("tasks:initial", (initialTasks: Task[]) => {
-      setTasks(Array.isArray(initialTasks) ? initialTasks : []);
+    newSocket.on(
+      "tasks:initial",
+      ({ data, total }: { data: Task[]; total: number }) => {
+        setTasks(Array.isArray(data) ? data : []);
+        setTotal(total ?? 0);
+      },
+    );
+
+    newSocket.on("task:added", (task: Task) => {
+      const matchesFilter =
+        !selectedStatusRef.current ||
+        task.status === selectedStatusRef.current;
+      if (matchesFilter) {
+        setTasks((prev) => [...prev, task]);
+        setTotal((prev) => prev + 1);
+      }
+    });
+
+    newSocket.on("task:updated", (task: Task) => {
+      setTasks((prev) => prev.map((t) => (t.id === task.id ? task : t)));
+    });
+
+    newSocket.on("task:deleted", (id: string) => {
+      setTasks((prev) => prev.filter((t) => t.id !== id));
+      setTotal((prev) => Math.max(0, prev - 1));
     });
 
     return () => {

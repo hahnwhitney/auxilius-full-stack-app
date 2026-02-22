@@ -113,9 +113,72 @@ describe("TaskBoardView", () => {
       { id: "1", title: "A", description: "B", status: TaskStatus.TODO },
       { id: "2", title: "C", description: "D", status: TaskStatus.DONE },
     ];
-    triggerSocketEvent(socket, "tasks:initial", initialTasks);
+    triggerSocketEvent(socket, "tasks:initial", {
+      data: initialTasks,
+      total: initialTasks.length,
+    });
     expect(screen.getByTestId(TaskStatus.TODO)).toBeInTheDocument();
     expect(screen.getByTestId(TaskStatus.DONE)).toBeInTheDocument();
+  });
+
+  it("adds a task to the list when task:added fires", () => {
+    triggerSocketEvent(socket, "task:added", {
+      id: "new",
+      title: "New Task",
+      description: "",
+      status: TaskStatus.TODO,
+    });
+    expect(screen.getByTestId(TaskStatus.TODO)).toHaveTextContent(
+      "Tasks present",
+    );
+  });
+
+  it("does not add a task when task:added fires with a non-matching status filter", async () => {
+    const filterSelect = screen.getByRole("combobox");
+    await act(async () => {
+      fireEvent.change(filterSelect, {
+        target: { value: TaskStatus.IN_PROGRESS },
+      });
+    });
+    triggerSocketEvent(socket, "task:added", {
+      id: "new",
+      title: "New Task",
+      description: "",
+      status: TaskStatus.TODO,
+    });
+    expect(screen.getByTestId(TaskStatus.IN_PROGRESS)).toHaveTextContent(
+      "No tasks yet",
+    );
+  });
+
+  it("updates a task in-place when task:updated fires", () => {
+    triggerSocketEvent(socket, "tasks:initial", {
+      data: [{ id: "1", title: "A", description: "", status: TaskStatus.TODO }],
+      total: 1,
+    });
+    expect(screen.getByTestId(TaskStatus.TODO)).toHaveTextContent("Tasks present");
+
+    triggerSocketEvent(socket, "task:updated", {
+      id: "1",
+      title: "A",
+      description: "",
+      status: TaskStatus.DONE,
+    });
+
+    expect(screen.getByTestId(TaskStatus.DONE)).toHaveTextContent("Tasks present");
+    expect(screen.getByTestId(TaskStatus.TODO)).toHaveTextContent("No tasks yet");
+  });
+
+  it("removes a task when task:deleted fires", () => {
+    triggerSocketEvent(socket, "tasks:initial", {
+      data: [{ id: "1", title: "A", description: "", status: TaskStatus.TODO }],
+      total: 1,
+    });
+    expect(screen.getByTestId(TaskStatus.TODO)).toHaveTextContent("Tasks present");
+
+    triggerSocketEvent(socket, "task:deleted", "1");
+
+    expect(screen.getByTestId(TaskStatus.TODO)).toHaveTextContent("No tasks yet");
   });
 
   it("calls addTask when TaskForm adds a task", async () => {
