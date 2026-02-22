@@ -11,6 +11,7 @@ const STATUS_OPTIONS = [
 function TaskItem({ task }: { task: Task }) {
   const [title, setTitle] = useState(task.title);
   const [description, setDescription] = useState(task.description);
+  const [status, setStatus] = useState(task.status);
 
   useEffect(() => {
     if (title !== task.title) {
@@ -25,6 +26,13 @@ function TaskItem({ task }: { task: Task }) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [task.description]);
+
+  useEffect(() => {
+    if (status !== task.status) {
+      setStatus(task.status);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [task.status]);
 
   const patchTask = async (id: string, fields: Record<string, string>) => {
     try {
@@ -49,8 +57,9 @@ function TaskItem({ task }: { task: Task }) {
     patchTask(id, { description });
   };
 
-  const handleStatusChange = (id: string, status: string) => {
-    patchTask(id, { status });
+  const handleStatusChange = (id: string, newStatus: string) => {
+    setStatus(newStatus as TaskStatus);
+    patchTask(id, { status: newStatus });
   };
 
   const handleDelete = async (id: string) => {
@@ -94,7 +103,7 @@ function TaskItem({ task }: { task: Task }) {
   };
 
   return (
-    <div className={`${styles.taskItem} ${styles[task.status]}`}>
+    <div className={`${styles.taskItem} ${styles[status]}`}>
       <label className={styles.taskLabel}>
         <span>Title</span>
         <input
@@ -123,7 +132,7 @@ function TaskItem({ task }: { task: Task }) {
       <label className={styles.taskLabel}>
         <span>Status</span>
         <select
-          value={task.status}
+          value={status}
           onChange={(e) => handleStatusChange(task.id, e.target.value)}
           aria-label="Status"
         >
