@@ -10,45 +10,66 @@ const CreateUserView = () => {
   const { setIsAuthenticated, setCurrentUsername } = useAuth();
 
   const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [usernameErrorMsg, setUsernameErrorMsg] = useState("");
+  const [passwordErrorMsg, setPasswordErrorMsg] = useState("");
+  const [confirmPasswordErrorMsg, setConfirmPasswordErrorMsg] = useState("");
 
-  const validateUsername = async (username: string) => {
+  const validate = () => {
+    let valid = true;
+
     if (username.length < 1) {
       setUsernameErrorMsg("Username is required");
-      return false;
+      valid = false;
+    } else {
+      setUsernameErrorMsg("");
     }
+
+    if (password.length < 8) {
+      setPasswordErrorMsg("Password must be at least 8 characters");
+      valid = false;
+    } else {
+      setPasswordErrorMsg("");
+    }
+
+    if (confirmPassword !== password) {
+      setConfirmPasswordErrorMsg("Passwords do not match");
+      valid = false;
+    } else {
+      setConfirmPasswordErrorMsg("");
+    }
+
+    return valid;
+  };
+
+  const handleCreateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validate()) return;
 
     try {
       const res = await fetch("/api/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username }),
+        body: JSON.stringify({ username, password }),
       });
       if (res.status === 409) {
         setUsernameErrorMsg("Username already taken");
-        return false;
+        return;
       }
       if (!res.ok) {
-        setUsernameErrorMsg("Unable to create user");
-        return false;
+        const body = await res.json().catch(() => ({}));
+        setUsernameErrorMsg(body.error ?? "Unable to create user");
+        return;
       }
-      return true;
-    } catch {
-      setUsernameErrorMsg("Unable to create user");
-      return false;
-    }
-  };
-
-  const handleCreateUser = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setUsernameErrorMsg("");
-
-    if (await validateUsername(username)) {
       setCurrentUsername(username);
       setUsername("");
-
+      setPassword("");
+      setConfirmPassword("");
       setIsAuthenticated(true);
       navigate("/taskboard");
+    } catch {
+      setUsernameErrorMsg("Unable to create user");
     }
   };
 
@@ -66,6 +87,28 @@ const CreateUserView = () => {
             onChange={setUsername}
             inputValid={!usernameErrorMsg}
             validationErrorMsg={usernameErrorMsg}
+            className={styles.inputWrapper}
+          />
+
+          <Input
+            label="Password"
+            type="password"
+            id="password"
+            value={password}
+            onChange={setPassword}
+            inputValid={!passwordErrorMsg}
+            validationErrorMsg={passwordErrorMsg}
+            className={styles.inputWrapper}
+          />
+
+          <Input
+            label="Confirm Password"
+            type="password"
+            id="confirmPassword"
+            value={confirmPassword}
+            onChange={setConfirmPassword}
+            inputValid={!confirmPasswordErrorMsg}
+            validationErrorMsg={confirmPasswordErrorMsg}
             className={styles.inputWrapper}
           />
 

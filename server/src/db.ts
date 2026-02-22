@@ -1,3 +1,4 @@
+import bcrypt from "bcryptjs";
 import pg from "pg";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { and, eq, sql } from "drizzle-orm";
@@ -100,12 +101,38 @@ export async function deleteTask(id: string): Promise<boolean> {
 
 // ── Users ───────────────────────────────────────────────
 
-export async function insertUser(username: string): Promise<User> {
+export async function insertUser(
+  username: string,
+  password: string,
+): Promise<User> {
+  const passwordHash = await bcrypt.hash(password, 10);
   const [user] = await db
     .insert(users)
-    .values({ username })
+    .values({ username, passwordHash })
     .returning({ id: users.id, username: users.username });
   return user;
+}
+
+export async function authenticateUser(
+  username: string,
+  password: string,
+): Promise<User | null> {
+  const [row] = await db
+    .select({
+      id: users.id,
+      username: users.username,
+      passwordHash: users.passwordHash,
+    })
+    .from(users)
+    .where(eq(users.username, username));
+  if (!row || !row.passwordHash) return null;
+  try {
+    const match = await bcrypt.compare(password, row.passwordHash);
+    if (!match) return null;
+  } catch {
+    return null;
+  }
+  return { id: row.id, username: row.username };
 }
 
 export async function getUserById(id: string): Promise<User | null> {

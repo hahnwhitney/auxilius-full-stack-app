@@ -10,37 +10,39 @@ const LoginView = () => {
   const { setIsAuthenticated, setCurrentUsername } = useAuth();
 
   const [username, setUsername] = useState("");
-  const [usernameErrorMsg, setUsernameErrorMsg] = useState("");
-
-  const validateUsername = async (username: string) => {
-    if (username.length < 1) {
-      setUsernameErrorMsg("Username is required");
-      return false;
-    }
-
-    try {
-      const res = await fetch(`/api/users/${encodeURIComponent(username)}`);
-      if (!res.ok) {
-        setUsernameErrorMsg("Username not found");
-        return false;
-      }
-      return true;
-    } catch {
-      setUsernameErrorMsg("Unable to verify username");
-      return false;
-    }
-  };
+  const [password, setPassword] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setUsernameErrorMsg("");
+    setErrorMsg("");
 
-    if (await validateUsername(username)) {
+    if (username.length < 1) {
+      setErrorMsg("Username is required");
+      return;
+    }
+    if (password.length < 1) {
+      setErrorMsg("Password is required");
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/users/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+      if (!res.ok) {
+        setErrorMsg("Invalid username or password");
+        return;
+      }
       setCurrentUsername(username);
       setUsername("");
-
+      setPassword("");
       setIsAuthenticated(true);
       navigate("/taskboard");
+    } catch {
+      setErrorMsg("Unable to log in");
     }
   };
 
@@ -56,8 +58,19 @@ const LoginView = () => {
             id="username"
             value={username}
             onChange={setUsername}
-            inputValid={!usernameErrorMsg}
-            validationErrorMsg={usernameErrorMsg}
+            inputValid={!errorMsg}
+            validationErrorMsg=""
+            className={styles.inputWrapper}
+          />
+
+          <Input
+            label="Password"
+            type="password"
+            id="password"
+            value={password}
+            onChange={setPassword}
+            inputValid={!errorMsg}
+            validationErrorMsg={errorMsg}
             className={styles.inputWrapper}
           />
 

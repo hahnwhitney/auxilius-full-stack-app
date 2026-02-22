@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import LoginView from "./index";
+import CreateUserView from "./index";
 
 jest.mock("react-router", () => ({
   useNavigate: jest.fn(),
@@ -57,7 +57,7 @@ jest.mock("../../providers/auth/use-auth", () => () => ({
   setCurrentUsername,
 }));
 
-describe("LoginView", () => {
+describe("CreateUserView", () => {
   beforeEach(() => {
     setIsAuthenticated.mockClear();
     setCurrentUsername.mockClear();
@@ -68,81 +68,116 @@ describe("LoginView", () => {
     jest.restoreAllMocks();
   });
 
-  it("renders heading, username input, password input, and sign-up link", () => {
-    render(<LoginView />);
-    expect(screen.getByText("Welcome back!")).toBeInTheDocument();
+  it("renders heading, all three inputs, submit button, and login link", () => {
+    render(<CreateUserView />);
+    expect(screen.getByText("Create an account")).toBeInTheDocument();
     expect(screen.getByLabelText("Username")).toBeInTheDocument();
     expect(screen.getByLabelText("Password")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /log in/i })).toBeInTheDocument();
-    expect(screen.getByText("Create an Account")).toBeInTheDocument();
+    expect(screen.getByLabelText("Confirm Password")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /sign up/i })).toBeInTheDocument();
+    expect(screen.getByText("Login")).toBeInTheDocument();
   });
 
   it("shows error if username is empty", async () => {
-    render(<LoginView />);
-    fireEvent.click(screen.getByRole("button", { name: /log in/i }));
+    render(<CreateUserView />);
+    fireEvent.click(screen.getByRole("button", { name: /sign up/i }));
     await waitFor(() => {
       expect(screen.getByText("Username is required")).toBeInTheDocument();
     });
     expect(setIsAuthenticated).not.toHaveBeenCalled();
-    expect(setCurrentUsername).not.toHaveBeenCalled();
   });
 
-  it("shows error if password is empty", async () => {
-    render(<LoginView />);
-    fireEvent.change(screen.getByLabelText("Username"), {
-      target: { value: "whitney" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: /log in/i }));
-    await waitFor(() => {
-      expect(screen.getByText("Password is required")).toBeInTheDocument();
-    });
-    expect(setIsAuthenticated).not.toHaveBeenCalled();
-  });
-
-  it("shows error on invalid credentials", async () => {
-    (globalThis.fetch as jest.Mock).mockResolvedValue({ ok: false, status: 401 });
-    render(<LoginView />);
+  it("shows error if password is too short", async () => {
+    render(<CreateUserView />);
     fireEvent.change(screen.getByLabelText("Username"), {
       target: { value: "whitney" },
     });
     fireEvent.change(screen.getByLabelText("Password"), {
-      target: { value: "wrongpassword" },
+      target: { value: "short" },
     });
-    fireEvent.click(screen.getByRole("button", { name: /log in/i }));
+    fireEvent.change(screen.getByLabelText("Confirm Password"), {
+      target: { value: "short" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /sign up/i }));
     await waitFor(() => {
-      expect(screen.getByText("Invalid username or password")).toBeInTheDocument();
+      expect(
+        screen.getByText("Password must be at least 8 characters"),
+      ).toBeInTheDocument();
+    });
+    expect(setIsAuthenticated).not.toHaveBeenCalled();
+  });
+
+  it("shows error if passwords do not match", async () => {
+    render(<CreateUserView />);
+    fireEvent.change(screen.getByLabelText("Username"), {
+      target: { value: "whitney" },
+    });
+    fireEvent.change(screen.getByLabelText("Password"), {
+      target: { value: "password123" },
+    });
+    fireEvent.change(screen.getByLabelText("Confirm Password"), {
+      target: { value: "different123" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /sign up/i }));
+    await waitFor(() => {
+      expect(screen.getByText("Passwords do not match")).toBeInTheDocument();
+    });
+    expect(setIsAuthenticated).not.toHaveBeenCalled();
+  });
+
+  it("shows error when username is already taken (409)", async () => {
+    (globalThis.fetch as jest.Mock).mockResolvedValue({ ok: false, status: 409 });
+    render(<CreateUserView />);
+    fireEvent.change(screen.getByLabelText("Username"), {
+      target: { value: "whitney" },
+    });
+    fireEvent.change(screen.getByLabelText("Password"), {
+      target: { value: "password123" },
+    });
+    fireEvent.change(screen.getByLabelText("Confirm Password"), {
+      target: { value: "password123" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /sign up/i }));
+    await waitFor(() => {
+      expect(screen.getByText("Username already taken")).toBeInTheDocument();
     });
     expect(setIsAuthenticated).not.toHaveBeenCalled();
   });
 
   it("shows error when fetch throws", async () => {
     (globalThis.fetch as jest.Mock).mockRejectedValue(new Error("network error"));
-    render(<LoginView />);
+    render(<CreateUserView />);
     fireEvent.change(screen.getByLabelText("Username"), {
       target: { value: "whitney" },
     });
     fireEvent.change(screen.getByLabelText("Password"), {
       target: { value: "password123" },
     });
-    fireEvent.click(screen.getByRole("button", { name: /log in/i }));
+    fireEvent.change(screen.getByLabelText("Confirm Password"), {
+      target: { value: "password123" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /sign up/i }));
     await waitFor(() => {
-      expect(screen.getByText("Unable to log in")).toBeInTheDocument();
+      expect(screen.getByText("Unable to create user")).toBeInTheDocument();
     });
     expect(setIsAuthenticated).not.toHaveBeenCalled();
   });
 
-  it("POSTs credentials to /api/users/login", async () => {
+  it("POSTs username and password to /api/users", async () => {
     (globalThis.fetch as jest.Mock).mockResolvedValue({ ok: true });
-    render(<LoginView />);
+    render(<CreateUserView />);
     fireEvent.change(screen.getByLabelText("Username"), {
       target: { value: "whitney" },
     });
     fireEvent.change(screen.getByLabelText("Password"), {
       target: { value: "password123" },
     });
-    fireEvent.click(screen.getByRole("button", { name: /log in/i }));
+    fireEvent.change(screen.getByLabelText("Confirm Password"), {
+      target: { value: "password123" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /sign up/i }));
     await waitFor(() => {
-      expect(globalThis.fetch).toHaveBeenCalledWith("/api/users/login", {
+      expect(globalThis.fetch).toHaveBeenCalledWith("/api/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username: "whitney", password: "password123" }),
@@ -150,20 +185,23 @@ describe("LoginView", () => {
     });
   });
 
-  it("authenticates and redirects on valid credentials", async () => {
+  it("authenticates and redirects after successful sign-up", async () => {
     (globalThis.fetch as jest.Mock).mockResolvedValue({ ok: true });
     const navigateMock = jest.fn();
     jest
       .mocked(jest.requireMock("react-router").useNavigate)
       .mockReturnValue(navigateMock);
-    render(<LoginView />);
+    render(<CreateUserView />);
     fireEvent.change(screen.getByLabelText("Username"), {
       target: { value: "whitney" },
     });
     fireEvent.change(screen.getByLabelText("Password"), {
       target: { value: "password123" },
     });
-    fireEvent.click(screen.getByRole("button", { name: /log in/i }));
+    fireEvent.change(screen.getByLabelText("Confirm Password"), {
+      target: { value: "password123" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /sign up/i }));
     await waitFor(() => {
       expect(setCurrentUsername).toHaveBeenCalledWith("whitney");
       expect(setIsAuthenticated).toHaveBeenCalledWith(true);
@@ -171,17 +209,20 @@ describe("LoginView", () => {
     });
   });
 
-  it("clears inputs after successful login", async () => {
+  it("clears inputs after successful sign-up", async () => {
     (globalThis.fetch as jest.Mock).mockResolvedValue({ ok: true });
-    render(<LoginView />);
+    render(<CreateUserView />);
     const usernameInput = screen.getByLabelText("Username");
     const passwordInput = screen.getByLabelText("Password");
+    const confirmInput = screen.getByLabelText("Confirm Password");
     fireEvent.change(usernameInput, { target: { value: "whitney" } });
     fireEvent.change(passwordInput, { target: { value: "password123" } });
-    fireEvent.click(screen.getByRole("button", { name: /log in/i }));
+    fireEvent.change(confirmInput, { target: { value: "password123" } });
+    fireEvent.click(screen.getByRole("button", { name: /sign up/i }));
     await waitFor(() => {
       expect(usernameInput).toHaveValue("");
       expect(passwordInput).toHaveValue("");
+      expect(confirmInput).toHaveValue("");
     });
   });
 });

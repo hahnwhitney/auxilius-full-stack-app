@@ -12,6 +12,7 @@
     "studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.3",
     "drizzle-orm": "^0.45.1",
     "express": "^5.1.0",
     "pg": "^8.18.0",
@@ -19,6 +20,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
     "@types/express": "^5.0.0",
     "@types/node": "^22.0.0",
     "@types/pg": "^8.16.0",
