@@ -28,6 +28,9 @@ function TaskBoardView() {
   }, [selectedStatus]);
 
   useEffect(() => {
+    // io({ forceNew: true }) bypasses the cache on every mount, creating a genuine new socket connection
+    // The server's connection handler fires, tasks:initial is emitted, and both paths (socket + REST)
+    // populate the board redundantly — so a transient REST failure no longer leaves it empty.
     const newSocket = io({ forceNew: true });
 
     newSocket.on("connect", () => setConnected(true));
