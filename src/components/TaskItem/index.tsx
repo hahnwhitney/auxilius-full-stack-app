@@ -76,12 +76,6 @@ function TaskItem({ task }: { task: Task }) {
   const handleTitleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       (e.target as HTMLInputElement).blur();
-      const trimmed = title.trim();
-      if (trimmed.length > 0 && trimmed !== task.title) {
-        handleTitleChange(task.id, trimmed);
-      } else {
-        setTitle(task.title);
-      }
     }
   };
 
@@ -96,9 +90,6 @@ function TaskItem({ task }: { task: Task }) {
   ) => {
     if (e.key === "Enter") {
       (e.target as HTMLInputElement).blur();
-      if (description !== task.description) {
-        handleDescriptionChange(task.id, description);
-      }
     }
   };
 
