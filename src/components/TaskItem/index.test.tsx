@@ -18,6 +18,7 @@ describe("TaskItem", () => {
     title: "Test Task",
     description: "Test Description",
     status: TaskStatus.TODO,
+    userId: null,
   };
 
   it("renders all fields and options", () => {

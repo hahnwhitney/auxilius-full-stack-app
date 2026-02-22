@@ -14,12 +14,14 @@ describe("TaskColumn", () => {
       title: "Task 1",
       description: "Desc 1",
       status: TaskStatus.TODO,
+      userId: null,
     },
     {
       id: "2",
       title: "Task 2",
       description: "Desc 2",
       status: TaskStatus.TODO,
+      userId: null,
     },
   ];
   const status = TaskStatus.TODO;

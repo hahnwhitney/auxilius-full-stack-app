@@ -110,8 +110,8 @@ describe("TaskBoardView", () => {
 
   it("handles tasks:initial event", () => {
     const initialTasks = [
-      { id: "1", title: "A", description: "B", status: TaskStatus.TODO },
-      { id: "2", title: "C", description: "D", status: TaskStatus.DONE },
+      { id: "1", title: "A", description: "B", status: TaskStatus.TODO, userId: null },
+      { id: "2", title: "C", description: "D", status: TaskStatus.DONE, userId: null },
     ];
     triggerSocketEvent(socket, "tasks:initial", {
       data: initialTasks,
@@ -127,6 +127,7 @@ describe("TaskBoardView", () => {
       title: "New Task",
       description: "",
       status: TaskStatus.TODO,
+      userId: null,
     });
     expect(screen.getByTestId(TaskStatus.TODO)).toHaveTextContent(
       "Tasks present",
@@ -145,6 +146,7 @@ describe("TaskBoardView", () => {
       title: "New Task",
       description: "",
       status: TaskStatus.TODO,
+      userId: null,
     });
     expect(screen.getByTestId(TaskStatus.IN_PROGRESS)).toHaveTextContent(
       "No tasks yet",
@@ -153,7 +155,7 @@ describe("TaskBoardView", () => {
 
   it("updates a task in-place when task:updated fires", () => {
     triggerSocketEvent(socket, "tasks:initial", {
-      data: [{ id: "1", title: "A", description: "", status: TaskStatus.TODO }],
+      data: [{ id: "1", title: "A", description: "", status: TaskStatus.TODO, userId: null }],
       total: 1,
     });
     expect(screen.getByTestId(TaskStatus.TODO)).toHaveTextContent("Tasks present");
@@ -163,6 +165,7 @@ describe("TaskBoardView", () => {
       title: "A",
       description: "",
       status: TaskStatus.DONE,
+      userId: null,
     });
 
     expect(screen.getByTestId(TaskStatus.DONE)).toHaveTextContent("Tasks present");
@@ -171,7 +174,7 @@ describe("TaskBoardView", () => {
 
   it("removes a task when task:deleted fires", () => {
     triggerSocketEvent(socket, "tasks:initial", {
-      data: [{ id: "1", title: "A", description: "", status: TaskStatus.TODO }],
+      data: [{ id: "1", title: "A", description: "", status: TaskStatus.TODO, userId: null }],
       total: 1,
     });
     expect(screen.getByTestId(TaskStatus.TODO)).toHaveTextContent("Tasks present");

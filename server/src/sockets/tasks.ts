@@ -12,7 +12,12 @@ export function registerTaskSocketHandlers(io: Server) {
 
     socket.on(
       "task:add",
-      async (data: { title: string; description: string; status: string }) => {
+      async (data: {
+        title: string;
+        description: string;
+        status: string;
+        userId?: string;
+      }) => {
         try {
           const title = data.title.trim();
           if (title.length === 0) return;
@@ -21,7 +26,12 @@ export function registerTaskSocketHandlers(io: Server) {
           )
             ? (data.status as TaskStatus)
             : TaskStatus.TODO;
-          const task = await insertTask(title, data.description ?? "", status);
+          const task = await insertTask(
+            title,
+            data.description ?? "",
+            status,
+            data.userId,
+          );
           io.emit("task:added", task);
         } catch (err) {
           console.error("Failed to add task:", err);

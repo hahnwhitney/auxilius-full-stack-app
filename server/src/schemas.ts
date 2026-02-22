@@ -5,6 +5,7 @@ export const createTaskSchema = z.object({
   title: z.string().trim().min(1, "Title is required"),
   description: z.string().optional(),
   status: z.nativeEnum(TaskStatus).optional(),
+  userId: z.string().uuid().optional(),
 });
 
 export const updateTaskSchema = z
@@ -21,6 +22,7 @@ export const getTasksQuerySchema = z.object({
   status: z.nativeEnum(TaskStatus).optional(),
   page: z.coerce.number().int().min(1).optional().default(1),
   limit: z.coerce.number().int().min(1).max(100).optional().default(20),
+  userId: z.string().uuid().optional(),
 });
 
 export const createUserSchema = z.object({

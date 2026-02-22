@@ -9,6 +9,7 @@ export interface Task {
   title: string;
   description: string;
   status: TaskStatus;
+  userId: string | null;
 }
 
 export interface User {

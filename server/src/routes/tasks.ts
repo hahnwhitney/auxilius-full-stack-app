@@ -18,8 +18,8 @@ export function createTaskRouter(io: Server) {
         res.status(400).json({ error: result.error.issues[0].message });
         return;
       }
-      const { status, page, limit } = result.data;
-      const { data, total } = await getAllTasks(status, page, limit);
+      const { status, page, limit, userId } = result.data;
+      const { data, total } = await getAllTasks(status, page, limit, userId);
       res.json({ data, total, page, limit });
     } catch (err) {
       console.error("Failed to fetch tasks:", err);
@@ -34,11 +34,12 @@ export function createTaskRouter(io: Server) {
         res.status(400).json({ error: result.error.issues[0].message });
         return;
       }
-      const { title, description, status } = result.data;
+      const { title, description, status, userId } = result.data;
       const task = await insertTask(
         title,
         description ?? "",
         status ?? TaskStatus.TODO,
+        userId,
       );
       io.emit("task:added", task);
       res.status(201).json(task);

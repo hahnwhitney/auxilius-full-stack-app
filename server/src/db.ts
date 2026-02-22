@@ -1,6 +1,6 @@
 import pg from "pg";
 import { drizzle } from "drizzle-orm/node-postgres";
-import { eq, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { tasks, users } from "./schema.js";
 import type { Task, TaskStatus, User } from "./types.js";
 
@@ -22,6 +22,7 @@ export async function getAllTasks(
   status?: TaskStatus,
   page = 1,
   limit = 20,
+  userId?: string,
 ): Promise<{ data: Task[]; total: number }> {
   const offset = (page - 1) * limit;
   const fields = {
@@ -29,29 +30,22 @@ export async function getAllTasks(
     title: tasks.title,
     description: tasks.description,
     status: tasks.status,
+    userId: tasks.userId,
   };
 
-  if (status) {
-    const [{ count }] = await db
-      .select({ count: sql<number>`cast(count(*) as int)` })
-      .from(tasks)
-      .where(eq(tasks.status, status));
-    const data = await db
-      .select(fields)
-      .from(tasks)
-      .where(eq(tasks.status, status))
-      .orderBy(tasks.createdAt)
-      .limit(limit)
-      .offset(offset);
-    return { data, total: Number(count) };
-  }
+  const where = and(
+    status ? eq(tasks.status, status) : undefined,
+    userId ? eq(tasks.userId, userId) : undefined,
+  );
 
   const [{ count }] = await db
     .select({ count: sql<number>`cast(count(*) as int)` })
-    .from(tasks);
+    .from(tasks)
+    .where(where);
   const data = await db
     .select(fields)
     .from(tasks)
+    .where(where)
     .orderBy(tasks.createdAt)
     .limit(limit)
     .offset(offset);
@@ -62,15 +56,17 @@ export async function insertTask(
   title: string,
   description: string,
   status: TaskStatus,
+  userId?: string,
 ): Promise<Task> {
   const [task] = await db
     .insert(tasks)
-    .values({ title, description, status })
+    .values({ title, description, status, userId: userId ?? null })
     .returning({
       id: tasks.id,
       title: tasks.title,
       description: tasks.description,
       status: tasks.status,
+      userId: tasks.userId,
     });
   return task;
 }
@@ -89,6 +85,7 @@ export async function updateTask(
       title: tasks.title,
       description: tasks.description,
       status: tasks.status,
+      userId: tasks.userId,
     });
   return task ?? null;
 }
