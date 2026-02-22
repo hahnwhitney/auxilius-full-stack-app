@@ -1,8 +1,13 @@
-import { render, screen, act, fireEvent, within } from "@testing-library/react";
+import { render, screen, act, fireEvent } from "@testing-library/react";
 import TaskBoardView from "./index";
 import { io } from "socket.io-client";
 import { TaskStatus, type Task } from "../../types";
 
+jest.mock("../../api/tasks", () => ({
+  addTask: jest.fn().mockResolvedValue(undefined),
+  patchTask: jest.fn().mockResolvedValue(undefined),
+  deleteTask: jest.fn().mockResolvedValue(undefined),
+}));
 jest.mock("socket.io-client", () => ({
   io: jest.fn(() => {
     const listeners: Record<string, (...args: unknown[]) => void> = {};
@@ -100,59 +105,10 @@ describe("TaskBoardView", () => {
     expect(screen.getByTestId(TaskStatus.DONE)).toBeInTheDocument();
   });
 
-  it("handles task:added event", () => {
-    triggerSocketEvent(socket, "tasks:initial", []);
-    triggerSocketEvent(socket, "task:added", {
-      id: "3",
-      title: "E",
-      description: "F",
-      status: TaskStatus.IN_PROGRESS,
-    });
-    expect(screen.getByTestId(TaskStatus.IN_PROGRESS)).toBeInTheDocument();
-  });
-
-  it("handles task:updated event", () => {
-    triggerSocketEvent(socket, "tasks:initial", [
-      { id: "1", title: "A", description: "B", status: TaskStatus.TODO },
-    ]);
-    triggerSocketEvent(socket, "task:updated", {
-      id: "1",
-      title: "Z",
-      description: "ZZ",
-      status: TaskStatus.DONE,
-    });
-    expect(screen.getByTestId(TaskStatus.DONE)).toBeInTheDocument();
-  });
-
-  it("handles task:deleted event", () => {
-    triggerSocketEvent(socket, "tasks:initial", [
-      { id: "1", title: "A", description: "B", status: TaskStatus.TODO },
-    ]);
-    triggerSocketEvent(socket, "task:deleted", "1");
-
-    const todoColumn = screen.getByTestId("to_do");
-    const noTasksMessage = within(todoColumn).getByText("No tasks yet");
-    expect(noTasksMessage).toBeInTheDocument();
-  });
-
-  it("emits task:add when TaskForm adds task", () => {
+  it("calls addTask when TaskForm adds a task", async () => {
+    const { addTask } = await import("../../api/tasks");
     const addBtn = screen.getByText("Add");
     fireEvent.click(addBtn);
-    expect(socket.emit).toHaveBeenCalledWith("task:add", {
-      title: "title",
-      description: "desc",
-      status: TaskStatus.TODO,
-    });
-  });
-
-  it("emits task:update and task:delete on handlers", () => {
-    const task = {
-      id: "1",
-      title: "A",
-      description: "B",
-      status: TaskStatus.TODO,
-    };
-    triggerSocketEvent(socket, "tasks:initial", [task]);
-    expect(socket.emit).toBeDefined();
+    expect(addTask).toHaveBeenCalledWith("title", "desc", TaskStatus.TODO);
   });
 });

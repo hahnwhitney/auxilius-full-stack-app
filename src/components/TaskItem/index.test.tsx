@@ -1,18 +1,15 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import TaskItem from "./index";
 import { TaskStatus } from "../../types";
+import { patchTask, deleteTask } from "../../api/tasks";
 
-let fetchMock: jest.Mock;
-
-beforeEach(() => {
-  fetchMock = jest.fn(() =>
-    Promise.resolve({ ok: true, statusText: "OK" }),
-  ) as jest.Mock;
-  globalThis.fetch = fetchMock as typeof fetch;
-});
+jest.mock("../../api/tasks", () => ({
+  patchTask: jest.fn().mockResolvedValue(undefined),
+  deleteTask: jest.fn().mockResolvedValue(undefined),
+}));
 
 afterEach(() => {
-  jest.restoreAllMocks();
+  jest.clearAllMocks();
 });
 
 describe("TaskItem", () => {
@@ -40,11 +37,7 @@ describe("TaskItem", () => {
     const titleInput = screen.getByDisplayValue(task.title);
     fireEvent.change(titleInput, { target: { value: "New Title" } });
     fireEvent.blur(titleInput);
-    expect(fetchMock).toHaveBeenCalledWith(`/api/tasks/${task.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title: "New Title" }),
-    });
+    expect(patchTask).toHaveBeenCalledWith(task.id, { title: "New Title" });
   });
 
   it("resets title if changed to empty or unchanged", () => {
@@ -52,12 +45,12 @@ describe("TaskItem", () => {
     const titleInput = screen.getByDisplayValue(task.title);
     fireEvent.change(titleInput, { target: { value: "" } });
     fireEvent.blur(titleInput);
-    expect(fetchMock).not.toHaveBeenCalled();
+    expect(patchTask).not.toHaveBeenCalled();
     expect(titleInput).toHaveValue(task.title);
 
     fireEvent.change(titleInput, { target: { value: task.title } });
     fireEvent.blur(titleInput);
-    expect(fetchMock).not.toHaveBeenCalled();
+    expect(patchTask).not.toHaveBeenCalled();
     expect(titleInput).toHaveValue(task.title);
   });
 
@@ -66,10 +59,8 @@ describe("TaskItem", () => {
     const descInput = screen.getByDisplayValue(task.description);
     fireEvent.change(descInput, { target: { value: "New Desc" } });
     fireEvent.blur(descInput);
-    expect(fetchMock).toHaveBeenCalledWith(`/api/tasks/${task.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ description: "New Desc" }),
+    expect(patchTask).toHaveBeenCalledWith(task.id, {
+      description: "New Desc",
     });
   });
 
@@ -77,25 +68,21 @@ describe("TaskItem", () => {
     render(<TaskItem task={task} />);
     const descInput = screen.getByDisplayValue(task.description);
     fireEvent.blur(descInput);
-    expect(fetchMock).not.toHaveBeenCalled();
+    expect(patchTask).not.toHaveBeenCalled();
   });
 
   it("PATCHes status when select changes", () => {
     render(<TaskItem task={task} />);
     const select = screen.getByLabelText("Status");
     fireEvent.change(select, { target: { value: TaskStatus.DONE } });
-    expect(fetchMock).toHaveBeenCalledWith(`/api/tasks/${task.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: TaskStatus.DONE }),
+    expect(patchTask).toHaveBeenCalledWith(task.id, {
+      status: TaskStatus.DONE,
     });
 
-    fetchMock.mockClear();
+    jest.clearAllMocks();
     fireEvent.change(select, { target: { value: TaskStatus.IN_PROGRESS } });
-    expect(fetchMock).toHaveBeenCalledWith(`/api/tasks/${task.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: TaskStatus.IN_PROGRESS }),
+    expect(patchTask).toHaveBeenCalledWith(task.id, {
+      status: TaskStatus.IN_PROGRESS,
     });
   });
 
@@ -105,9 +92,7 @@ describe("TaskItem", () => {
       name: `Delete ${task.title}`,
     });
     fireEvent.click(deleteBtn);
-    expect(fetchMock).toHaveBeenCalledWith(`/api/tasks/${task.id}`, {
-      method: "DELETE",
-    });
+    expect(deleteTask).toHaveBeenCalledWith(task.id);
   });
 
   it("syncs local state when task prop changes", () => {
@@ -130,20 +115,14 @@ describe("TaskItem", () => {
     const titleInput = screen.getByDisplayValue(task.title);
     fireEvent.change(titleInput, { target: { value: "New Title" } });
     fireEvent.keyDown(titleInput, { key: "Enter" });
-    expect(fetchMock).toHaveBeenCalledWith(`/api/tasks/${task.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title: "New Title" }),
-    });
+    expect(patchTask).toHaveBeenCalledWith(task.id, { title: "New Title" });
 
-    fetchMock.mockClear();
+    jest.clearAllMocks();
     const descInput = screen.getByDisplayValue(task.description);
     fireEvent.change(descInput, { target: { value: "New Desc" } });
     fireEvent.keyDown(descInput, { key: "Enter" });
-    expect(fetchMock).toHaveBeenCalledWith(`/api/tasks/${task.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ description: "New Desc" }),
+    expect(patchTask).toHaveBeenCalledWith(task.id, {
+      description: "New Desc",
     });
   });
 });

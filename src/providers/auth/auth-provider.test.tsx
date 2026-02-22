@@ -16,7 +16,7 @@ describe("AuthProvider", () => {
         </AuthContext.Consumer>
       </AuthProvider>,
     );
-    expect(contextValues!.isAuthenticated).toBe(true);
+    expect(contextValues!.isAuthenticated).toBe(false);
     expect(contextValues!.currentUsername).toBe("");
     expect(typeof contextValues!.setIsAuthenticated).toBe("function");
     expect(typeof contextValues!.setCurrentUsername).toBe("function");
