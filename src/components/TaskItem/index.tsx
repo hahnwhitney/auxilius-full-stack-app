@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { TaskStatus, type Task } from "../../types";
+import { patchTask, deleteTask } from "../../api/tasks";
 import styles from "./index.module.css";
 
 const STATUS_OPTIONS = [
@@ -34,21 +35,6 @@ function TaskItem({ task }: { task: Task }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [task.status]);
 
-  const patchTask = async (id: string, fields: Record<string, string>) => {
-    try {
-      const res = await fetch(`/api/tasks/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(fields),
-      });
-      if (!res.ok) {
-        console.error("Failed to update task:", res.statusText);
-      }
-    } catch (err) {
-      console.error("Failed to update task:", err);
-    }
-  };
-
   const handleTitleChange = (id: string, title: string) => {
     patchTask(id, { title });
   };
@@ -60,17 +46,6 @@ function TaskItem({ task }: { task: Task }) {
   const handleStatusChange = (id: string, newStatus: string) => {
     setStatus(newStatus as TaskStatus);
     patchTask(id, { status: newStatus });
-  };
-
-  const handleDelete = async (id: string) => {
-    try {
-      const res = await fetch(`/api/tasks/${id}`, { method: "DELETE" });
-      if (!res.ok) {
-        console.error("Failed to delete task:", res.statusText);
-      }
-    } catch (err) {
-      console.error("Failed to delete task:", err);
-    }
   };
 
   const handleTitleBlur = () => {
@@ -146,7 +121,7 @@ function TaskItem({ task }: { task: Task }) {
 
       <div className={styles.deleteBtnWrapper}>
         <button
-          onClick={() => handleDelete(task.id)}
+          onClick={() => deleteTask(task.id)}
           className={styles.taskDeleteBtn}
           aria-label={`Delete ${task.title}`}
         >

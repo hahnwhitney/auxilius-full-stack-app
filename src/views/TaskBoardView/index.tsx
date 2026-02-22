@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import { TaskStatus, type Task } from "../../types";
+import { addTask } from "../../api/tasks";
 import TaskForm from "../../components/TaskForm";
 import TaskColumn from "../../components/TaskColumn";
 import styles from "./index.module.css";
@@ -24,23 +25,12 @@ function TaskBoardView() {
     };
   }, []);
 
-  const handleAdd = async (
+  const handleAdd = (
     title: string,
     description: string,
     status: TaskStatus,
   ) => {
-    try {
-      const res = await fetch("/api/tasks", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, description, status }),
-      });
-      if (!res.ok) {
-        console.error("Failed to add task:", res.statusText);
-      }
-    } catch (err) {
-      console.error("Failed to add task:", err);
-    }
+    addTask(title, description, status);
   };
 
   const toBeDoneTasks = tasks.filter((task) => task.status === TaskStatus.TODO);
