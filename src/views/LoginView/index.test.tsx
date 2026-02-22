@@ -24,6 +24,8 @@ jest.mock("../../components/Input", () => ({
     value,
     onChange,
     id,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    inputValid,
     ...props
   }: {
     label: string;
@@ -31,6 +33,7 @@ jest.mock("../../components/Input", () => ({
     value?: string;
     onChange?: (v: string) => void;
     id: string;
+    inputValid?: boolean;
   } & React.InputHTMLAttributes<HTMLInputElement>) => (
     <div>
       <label htmlFor={id}>{label}</label>

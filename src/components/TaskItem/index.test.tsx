@@ -113,12 +113,14 @@ describe("TaskItem", () => {
   it("PATCHes on Enter key for title and description", () => {
     render(<TaskItem task={task} />);
     const titleInput = screen.getByDisplayValue(task.title);
+    titleInput.focus();
     fireEvent.change(titleInput, { target: { value: "New Title" } });
     fireEvent.keyDown(titleInput, { key: "Enter" });
     expect(patchTask).toHaveBeenCalledWith(task.id, { title: "New Title" });
 
     jest.clearAllMocks();
     const descInput = screen.getByDisplayValue(task.description);
+    descInput.focus();
     fireEvent.change(descInput, { target: { value: "New Desc" } });
     fireEvent.keyDown(descInput, { key: "Enter" });
     expect(patchTask).toHaveBeenCalledWith(task.id, {
