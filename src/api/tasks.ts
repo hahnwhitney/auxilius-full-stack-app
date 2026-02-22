@@ -1,3 +1,4 @@
+import { toast } from "react-toastify";
 import { TaskStatus } from "../types";
 
 export const addTask = async (
@@ -13,9 +14,11 @@ export const addTask = async (
     });
     if (!res.ok) {
       console.error("Failed to add task:", res.statusText);
+      toast.error("Failed to add task.");
     }
   } catch (err) {
     console.error("Failed to add task:", err);
+    toast.error("Failed to add task.");
   }
 };
 
@@ -31,9 +34,11 @@ export const patchTask = async (
     });
     if (!res.ok) {
       console.error("Failed to update task:", res.statusText);
+      toast.error("Failed to update task.");
     }
   } catch (err) {
     console.error("Failed to update task:", err);
+    toast.error("Failed to update task.");
   }
 };
 
@@ -42,8 +47,10 @@ export const deleteTask = async (id: string): Promise<void> => {
     const res = await fetch(`/api/tasks/${id}`, { method: "DELETE" });
     if (!res.ok) {
       console.error("Failed to delete task:", res.statusText);
+      toast.error("Failed to delete task.");
     }
   } catch (err) {
     console.error("Failed to delete task:", err);
+    toast.error("Failed to delete task.");
   }
 };
