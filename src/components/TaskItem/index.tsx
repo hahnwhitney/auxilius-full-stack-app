@@ -9,7 +9,20 @@ const STATUS_OPTIONS = [
   { value: TaskStatus.DONE, label: "Done" },
 ];
 
-function TaskItem({ task }: { task: Task }) {
+interface TaskItemProps {
+  task: Task;
+  onEditStart: (taskId: string) => void;
+  onEditStop: (taskId: string) => void;
+  otherEditors: string[];
+}
+
+function buildEditorWarning(editors: string[]): string {
+  if (editors.length === 1) return `${editors[0]} is editing this task`;
+  const allButLast = editors.slice(0, -1).join(", ");
+  return `${allButLast} and ${editors[editors.length - 1]} are editing this task`;
+}
+
+function TaskItem({ task, onEditStart, onEditStop, otherEditors }: TaskItemProps) {
   const [title, setTitle] = useState(task.title);
   const [description, setDescription] = useState(task.description);
   const [status, setStatus] = useState(task.status);
@@ -55,6 +68,7 @@ function TaskItem({ task }: { task: Task }) {
     } else {
       setTitle(task.title);
     }
+    onEditStop(task.id);
   };
 
   const handleTitleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -67,6 +81,7 @@ function TaskItem({ task }: { task: Task }) {
     if (description !== task.description) {
       handleDescriptionChange(task.id, description);
     }
+    onEditStop(task.id);
   };
 
   const handleDescriptionKeyDown = (
@@ -79,6 +94,12 @@ function TaskItem({ task }: { task: Task }) {
 
   return (
     <div className={`${styles.taskItem} ${styles[status]}`}>
+      {otherEditors.length > 0 && (
+        <div className={styles.editingWarning} role="alert">
+          <span>⚠ {buildEditorWarning(otherEditors)}</span>
+        </div>
+      )}
+
       <label className={styles.taskLabel}>
         <span>Title</span>
         <input
@@ -86,6 +107,7 @@ function TaskItem({ task }: { task: Task }) {
           className={styles.taskInput}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
+          onFocus={() => onEditStart(task.id)}
           onBlur={handleTitleBlur}
           onKeyDown={handleTitleKeyDown}
         />
@@ -98,6 +120,7 @@ function TaskItem({ task }: { task: Task }) {
           className={styles.taskInput}
           value={description}
           onChange={(e) => setDescription(e.target.value)}
+          onFocus={() => onEditStart(task.id)}
           onBlur={handleDescriptionBlur}
           onKeyDown={handleDescriptionKeyDown}
           placeholder="Add a description..."

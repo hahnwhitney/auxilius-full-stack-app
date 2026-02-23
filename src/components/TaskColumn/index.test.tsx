@@ -33,7 +33,7 @@ describe("TaskColumn", () => {
 
   it("renders column with correct status and name", () => {
     render(
-      <TaskColumn tasks={mockTasks} status={status} statusName={statusName} />,
+      <TaskColumn tasks={mockTasks} status={status} statusName={statusName} onEditStart={jest.fn()} onEditStop={jest.fn()} editingBy={{}} currentUsername="testuser" />,
     );
     expect(screen.getByText(statusName)).toBeInTheDocument();
     expect(document.querySelector(`.${status}`)).toBeInTheDocument();
@@ -41,7 +41,7 @@ describe("TaskColumn", () => {
 
   it("renders TaskItem for each task", () => {
     render(
-      <TaskColumn tasks={mockTasks} status={status} statusName={statusName} />,
+      <TaskColumn tasks={mockTasks} status={status} statusName={statusName} onEditStart={jest.fn()} onEditStop={jest.fn()} editingBy={{}} currentUsername="testuser" />,
     );
     const items = screen.getAllByTestId("task-item");
     expect(items).toHaveLength(mockTasks.length);
@@ -49,7 +49,7 @@ describe("TaskColumn", () => {
 
   it("passes correct props to TaskItem", () => {
     render(
-      <TaskColumn tasks={mockTasks} status={status} statusName={statusName} />,
+      <TaskColumn tasks={mockTasks} status={status} statusName={statusName} onEditStart={jest.fn()} onEditStop={jest.fn()} editingBy={{}} currentUsername="testuser" />,
     );
     expect(MockedTaskItem).toHaveBeenCalledTimes(mockTasks.length);
     mockTasks.forEach((task, idx) => {
@@ -58,7 +58,7 @@ describe("TaskColumn", () => {
   });
 
   it("renders nothing if tasks array is empty", () => {
-    render(<TaskColumn tasks={[]} status={status} statusName={statusName} />);
+    render(<TaskColumn tasks={[]} status={status} statusName={statusName} onEditStart={jest.fn()} onEditStop={jest.fn()} editingBy={{}} currentUsername="testuser" />);
     expect(screen.queryByTestId("task-item")).toBeNull();
   });
 });

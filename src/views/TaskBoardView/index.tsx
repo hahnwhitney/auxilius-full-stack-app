@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { io } from "socket.io-client";
 import { TaskStatus, type Task } from "../../types";
@@ -18,14 +18,16 @@ const LIMIT = 20;
 
 function TaskBoardView() {
   const navigate = useNavigate();
-  const { setIsAuthenticated } = useAuth();
+  const { setIsAuthenticated, currentUsername } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [connected, setConnected] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<TaskStatus | null>(null);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
+  const [editingBy, setEditingBy] = useState<Record<string, string[]>>({});
 
   const selectedStatusRef = useRef(selectedStatus);
+  const socketRef = useRef<ReturnType<typeof io> | null>(null);
 
   useEffect(() => {
     selectedStatusRef.current = selectedStatus;
@@ -36,6 +38,7 @@ function TaskBoardView() {
     // The server's connection handler fires, tasks:initial is emitted, and both paths (socket + REST)
     // populate the board redundantly — so a transient REST failure no longer leaves it empty.
     const newSocket = io({ forceNew: true, withCredentials: true });
+    socketRef.current = newSocket;
 
     newSocket.on("connect", () => setConnected(true));
     newSocket.on("disconnect", () => setConnected(false));
@@ -67,8 +70,16 @@ function TaskBoardView() {
       setTotal((prev) => Math.max(0, prev - 1));
     });
 
+    newSocket.on(
+      "task:editingBy",
+      ({ taskId, editors }: { taskId: string; editors: string[] }) => {
+        setEditingBy((prev) => ({ ...prev, [taskId]: editors }));
+      },
+    );
+
     return () => {
       newSocket.disconnect();
+      socketRef.current = null;
     };
   }, []);
 
@@ -80,6 +91,14 @@ function TaskBoardView() {
       })
       .catch(console.error);
   }, [selectedStatus, page]);
+
+  const handleEditStart = useCallback((taskId: string) => {
+    socketRef.current?.emit("task:editStart", { taskId });
+  }, []);
+
+  const handleEditStop = useCallback((taskId: string) => {
+    socketRef.current?.emit("task:editStop", { taskId });
+  }, []);
 
   const handleAdd = (
     title: string,
@@ -140,6 +159,10 @@ function TaskBoardView() {
             tasks={tasks.filter((t) => t.status === col.status)}
             status={col.status}
             statusName={col.statusName}
+            onEditStart={handleEditStart}
+            onEditStop={handleEditStop}
+            editingBy={editingBy}
+            currentUsername={currentUsername}
           />
         ))}
       </div>

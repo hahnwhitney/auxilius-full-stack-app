@@ -8,6 +8,7 @@ jest.mock("react-router", () => ({
 }));
 jest.mock("../../providers/auth/use-auth", () => () => ({
   setIsAuthenticated: jest.fn(),
+  currentUsername: "testuser",
 }));
 jest.mock("../../api/tasks", () => ({
   addTask: jest.fn().mockResolvedValue(undefined),

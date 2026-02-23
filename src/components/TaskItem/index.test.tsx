@@ -22,7 +22,7 @@ describe("TaskItem", () => {
   };
 
   it("renders all fields and options", () => {
-    render(<TaskItem task={task} />);
+    render(<TaskItem task={task} onEditStart={jest.fn()} onEditStop={jest.fn()} otherEditors={[]} />);
     expect(screen.getByDisplayValue(task.title)).toBeInTheDocument();
     expect(screen.getByDisplayValue(task.description)).toBeInTheDocument();
     expect(screen.getByText("To Do")).toBeInTheDocument();
@@ -34,7 +34,7 @@ describe("TaskItem", () => {
   });
 
   it("PATCHes title on blur if title changed and not empty", () => {
-    render(<TaskItem task={task} />);
+    render(<TaskItem task={task} onEditStart={jest.fn()} onEditStop={jest.fn()} otherEditors={[]} />);
     const titleInput = screen.getByDisplayValue(task.title);
     fireEvent.change(titleInput, { target: { value: "New Title" } });
     fireEvent.blur(titleInput);
@@ -42,7 +42,7 @@ describe("TaskItem", () => {
   });
 
   it("resets title if changed to empty or unchanged", () => {
-    render(<TaskItem task={task} />);
+    render(<TaskItem task={task} onEditStart={jest.fn()} onEditStop={jest.fn()} otherEditors={[]} />);
     const titleInput = screen.getByDisplayValue(task.title);
     fireEvent.change(titleInput, { target: { value: "" } });
     fireEvent.blur(titleInput);
@@ -56,7 +56,7 @@ describe("TaskItem", () => {
   });
 
   it("PATCHes description on blur if description changed", () => {
-    render(<TaskItem task={task} />);
+    render(<TaskItem task={task} onEditStart={jest.fn()} onEditStop={jest.fn()} otherEditors={[]} />);
     const descInput = screen.getByDisplayValue(task.description);
     fireEvent.change(descInput, { target: { value: "New Desc" } });
     fireEvent.blur(descInput);
@@ -66,14 +66,14 @@ describe("TaskItem", () => {
   });
 
   it("does not PATCH description if unchanged", () => {
-    render(<TaskItem task={task} />);
+    render(<TaskItem task={task} onEditStart={jest.fn()} onEditStop={jest.fn()} otherEditors={[]} />);
     const descInput = screen.getByDisplayValue(task.description);
     fireEvent.blur(descInput);
     expect(patchTask).not.toHaveBeenCalled();
   });
 
   it("PATCHes status when select changes", () => {
-    render(<TaskItem task={task} />);
+    render(<TaskItem task={task} onEditStart={jest.fn()} onEditStop={jest.fn()} otherEditors={[]} />);
     const select = screen.getByLabelText("Status");
     fireEvent.change(select, { target: { value: TaskStatus.DONE } });
     expect(patchTask).toHaveBeenCalledWith(task.id, {
@@ -88,7 +88,7 @@ describe("TaskItem", () => {
   });
 
   it("DELETEs task when delete button clicked", () => {
-    render(<TaskItem task={task} />);
+    render(<TaskItem task={task} onEditStart={jest.fn()} onEditStop={jest.fn()} otherEditors={[]} />);
     const deleteBtn = screen.getByRole("button", {
       name: `Delete ${task.title}`,
     });
@@ -97,7 +97,7 @@ describe("TaskItem", () => {
   });
 
   it("syncs local state when task prop changes", () => {
-    const { rerender } = render(<TaskItem task={task} />);
+    const { rerender } = render(<TaskItem task={task} onEditStart={jest.fn()} onEditStop={jest.fn()} otherEditors={[]} />);
     expect(screen.getByDisplayValue("Test Task")).toBeInTheDocument();
     expect(screen.getByDisplayValue("Test Description")).toBeInTheDocument();
 
@@ -106,13 +106,13 @@ describe("TaskItem", () => {
       title: "Updated Title",
       description: "Updated Description",
     };
-    rerender(<TaskItem task={updatedTask} />);
+    rerender(<TaskItem task={updatedTask} onEditStart={jest.fn()} onEditStop={jest.fn()} otherEditors={[]} />);
     expect(screen.getByDisplayValue("Updated Title")).toBeInTheDocument();
     expect(screen.getByDisplayValue("Updated Description")).toBeInTheDocument();
   });
 
   it("PATCHes on Enter key for title and description", () => {
-    render(<TaskItem task={task} />);
+    render(<TaskItem task={task} onEditStart={jest.fn()} onEditStop={jest.fn()} otherEditors={[]} />);
     const titleInput = screen.getByDisplayValue(task.title);
     titleInput.focus();
     fireEvent.change(titleInput, { target: { value: "New Title" } });
