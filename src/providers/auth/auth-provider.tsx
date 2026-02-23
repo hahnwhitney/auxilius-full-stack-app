@@ -1,4 +1,4 @@
-import React, { createContext, useState } from "react";
+import React, { createContext, useEffect, useState } from "react";
 
 export interface AuthContextValues {
   isAuthenticated: boolean;
@@ -16,6 +16,21 @@ const AuthContext = createContext<AuthContextValues | undefined>(undefined);
 const AuthProvider = ({ children }: AuthProviderProps) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [currentUsername, setCurrentUsername] = useState<string>("");
+
+  useEffect(() => {
+    fetch("/api/users/me", { credentials: "include" })
+      .then((res) => {
+        if (res.ok) return res.json();
+        return null;
+      })
+      .then((data) => {
+        if (data) {
+          setIsAuthenticated(true);
+          setCurrentUsername(data.username);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const contextValue: AuthContextValues = {
     isAuthenticated,

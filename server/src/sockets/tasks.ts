@@ -4,6 +4,13 @@ import { getAllTasks, insertTask, updateTask, deleteTask } from "../db.js";
 
 export function registerTaskSocketHandlers(io: Server) {
   io.on("connection", (socket) => {
+    const session = socket.request.session;
+    const userId = session?.userId as string | undefined;
+    if (!userId) {
+      socket.disconnect();
+      return;
+    }
+
     console.log(`Client connected: ${socket.id}`);
 
     getAllTasks(undefined, 1, 20)
@@ -16,7 +23,6 @@ export function registerTaskSocketHandlers(io: Server) {
         title: string;
         description: string;
         status: string;
-        userId?: string;
       }) => {
         try {
           const title = data.title.trim();
@@ -30,7 +36,7 @@ export function registerTaskSocketHandlers(io: Server) {
             title,
             data.description ?? "",
             status,
-            data.userId,
+            userId,
           );
           io.emit("task:added", task);
         } catch (err) {

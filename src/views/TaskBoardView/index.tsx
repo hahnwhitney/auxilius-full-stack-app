@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router";
 import { io } from "socket.io-client";
 import { TaskStatus, type Task } from "../../types";
 import { addTask, getTasks } from "../../api/tasks";
 import TaskForm from "../../components/TaskForm";
 import TaskColumn from "../../components/TaskColumn";
+import useAuth from "../../providers/auth/use-auth";
 import styles from "./index.module.css";
 
 const COLUMNS = [
@@ -15,6 +17,8 @@ const COLUMNS = [
 const LIMIT = 20;
 
 function TaskBoardView() {
+  const navigate = useNavigate();
+  const { setIsAuthenticated } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [connected, setConnected] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<TaskStatus | null>(null);
@@ -31,7 +35,7 @@ function TaskBoardView() {
     // io({ forceNew: true }) bypasses the cache on every mount, creating a genuine new socket connection
     // The server's connection handler fires, tasks:initial is emitted, and both paths (socket + REST)
     // populate the board redundantly — so a transient REST failure no longer leaves it empty.
-    const newSocket = io({ forceNew: true });
+    const newSocket = io({ forceNew: true, withCredentials: true });
 
     newSocket.on("connect", () => setConnected(true));
     newSocket.on("disconnect", () => setConnected(false));
@@ -90,6 +94,15 @@ function TaskBoardView() {
     setPage(1);
   };
 
+  const handleLogout = async () => {
+    await fetch("/api/users/logout", {
+      method: "POST",
+      credentials: "include",
+    });
+    setIsAuthenticated(false);
+    navigate("/login");
+  };
+
   const visibleColumns = selectedStatus
     ? COLUMNS.filter((c) => c.status === selectedStatus)
     : COLUMNS;
@@ -116,6 +129,7 @@ function TaskBoardView() {
         >
           {connected ? "Connected" : "Disconnected"}
         </div>
+        <button onClick={handleLogout}>Logout</button>
       </div>
       <TaskForm onAdd={handleAdd} />
 

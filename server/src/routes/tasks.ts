@@ -7,9 +7,12 @@ import {
   updateTaskSchema,
 } from "../schemas.js";
 import { TaskStatus } from "../types.js";
+import { requireAuth } from "../middleware/requireAuth.js";
 
 export function createTaskRouter(io: Server) {
   const router = Router();
+
+  router.use(requireAuth);
 
   router.get("/", async (req, res) => {
     try {
@@ -18,7 +21,8 @@ export function createTaskRouter(io: Server) {
         res.status(400).json({ error: result.error.issues[0].message });
         return;
       }
-      const { status, page, limit, userId } = result.data;
+      const { status, page, limit } = result.data;
+      const userId = req.session.userId;
       const { data, total } = await getAllTasks(status, page, limit, userId);
       res.json({ data, total, page, limit });
     } catch (err) {
@@ -34,12 +38,12 @@ export function createTaskRouter(io: Server) {
         res.status(400).json({ error: result.error.issues[0].message });
         return;
       }
-      const { title, description, status, userId } = result.data;
+      const { title, description, status } = result.data;
       const task = await insertTask(
         title,
         description ?? "",
         status ?? TaskStatus.TODO,
-        userId,
+        req.session.userId,
       );
       io.emit("task:added", task);
       res.status(201).json(task);

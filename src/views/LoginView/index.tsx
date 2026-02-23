@@ -30,6 +30,7 @@ const LoginView = () => {
       const res = await fetch("/api/users/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ username, password }),
       });
       if (!res.ok) {

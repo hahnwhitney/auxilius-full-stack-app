@@ -3,6 +3,12 @@ import TaskBoardView from "./index";
 import { io } from "socket.io-client";
 import { TaskStatus, type Task } from "../../types";
 
+jest.mock("react-router", () => ({
+  useNavigate: jest.fn(() => jest.fn()),
+}));
+jest.mock("../../providers/auth/use-auth", () => () => ({
+  setIsAuthenticated: jest.fn(),
+}));
 jest.mock("../../api/tasks", () => ({
   addTask: jest.fn().mockResolvedValue(undefined),
   patchTask: jest.fn().mockResolvedValue(undefined),

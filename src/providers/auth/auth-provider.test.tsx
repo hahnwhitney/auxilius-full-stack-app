@@ -4,6 +4,16 @@ import { AuthProvider, AuthContext } from "./auth-provider";
 import type { AuthContextValues } from "./auth-provider";
 
 describe("AuthProvider", () => {
+  beforeEach(() => {
+    (globalThis.fetch as jest.Mock) = jest
+      .fn()
+      .mockResolvedValue({ ok: false });
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   it("provides default context values", () => {
     let contextValues: AuthContextValues | undefined;
     render(

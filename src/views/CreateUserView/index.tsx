@@ -51,6 +51,7 @@ const CreateUserView = () => {
       const res = await fetch("/api/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ username, password }),
       });
       if (res.status === 409) {

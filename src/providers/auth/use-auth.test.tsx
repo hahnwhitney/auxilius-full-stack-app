@@ -3,6 +3,16 @@ import useAuth from "./use-auth";
 import { AuthProvider } from "./auth-provider";
 
 describe("useAuth", () => {
+  beforeEach(() => {
+    (globalThis.fetch as jest.Mock) = jest
+      .fn()
+      .mockResolvedValue({ ok: false });
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   it("throws error if used outside AuthProvider", () => {
     // Suppress error output for this test
     const originalError = console.error;

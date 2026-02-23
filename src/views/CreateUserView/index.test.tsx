@@ -180,6 +180,7 @@ describe("CreateUserView", () => {
       expect(globalThis.fetch).toHaveBeenCalledWith("/api/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ username: "whitney", password: "password123" }),
       });
     });

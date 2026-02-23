@@ -17,7 +17,7 @@ export const getTasks = async (
   if (status) params.set("status", status);
   params.set("page", String(page));
   params.set("limit", String(limit));
-  const res = await fetch(`/api/tasks?${params}`);
+  const res = await fetch(`/api/tasks?${params}`, { credentials: "include" });
   if (!res.ok) throw new Error(`Failed to fetch tasks: ${res.statusText}`);
   return res.json();
 };
@@ -31,6 +31,7 @@ export const addTask = async (
     const res = await fetch("/api/tasks", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({ title, description, status }),
     });
     if (!res.ok) {
@@ -51,6 +52,7 @@ export const patchTask = async (
     const res = await fetch(`/api/tasks/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify(fields),
     });
     if (!res.ok) {
@@ -65,7 +67,10 @@ export const patchTask = async (
 
 export const deleteTask = async (id: string): Promise<void> => {
   try {
-    const res = await fetch(`/api/tasks/${id}`, { method: "DELETE" });
+    const res = await fetch(`/api/tasks/${id}`, {
+      method: "DELETE",
+      credentials: "include",
+    });
     if (!res.ok) {
       console.error("Failed to delete task:", res.statusText);
       toast.error("Failed to delete task.");
