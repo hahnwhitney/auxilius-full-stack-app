@@ -105,7 +105,7 @@ export async function insertUser(
   username: string,
   password: string,
 ): Promise<User> {
-  const passwordHash = await bcrypt.hash(password, 10);
+  const passwordHash = bcrypt.hashSync(password, 10);
   const [user] = await db
     .insert(users)
     .values({ username, passwordHash })
@@ -127,7 +127,7 @@ export async function authenticateUser(
     .where(eq(users.username, username));
   if (!row || !row.passwordHash) return null;
   try {
-    const match = await bcrypt.compare(password, row.passwordHash);
+    const match = bcrypt.compareSync(password, row.passwordHash);
     if (!match) return null;
   } catch {
     return null;
